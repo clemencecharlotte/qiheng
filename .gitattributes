@@ -1,0 +1,2 @@
+# Preserve exported source bytes so SOURCE-MANIFEST matches Git blobs on every OS.
+* -text
