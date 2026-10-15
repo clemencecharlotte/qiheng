@@ -1,0 +1,211 @@
+/* D08-W1 r05 · AppearanceDial——滑杆卡片（ChatGPT segmented 语言：块状 thumb）。 */
+
+.u-w1-app {
+  position: relative;
+  display: inline-block;
+}
+
+.u-w1-app__trigger {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--pm-space-3, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  /* D09 r04：玻璃视觉六层静态（无 active transform——transform 曾吞触屏 click=展开失败） */
+  background:
+    linear-gradient(168deg, rgba(255, 255, 255, 0.2) 0%, transparent 62%),
+    color-mix(in srgb, var(--pm-surface, var(--surface, #ffffff)) 46%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.16),
+    0 4px 14px rgba(0, 0, 0, 0.22);
+  color: var(--text, #1b3038);
+  font-size: 13.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: visible; /* 弹层子元素不可被裁切 */
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .u-w1-app__trigger { background: color-mix(in srgb, var(--pm-surface, var(--surface, #ffffff)) 94%, transparent); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+.u-w1-app__trigger:focus-visible { outline: 2px solid var(--brand, #176b62); outline-offset: 2px; }
+.u-w1-app__trigger-icon { font-size: 16px; line-height: 1; }
+
+/* 滑杆卡片：实底圆角卡（无 blur） */
+.u-w1-app__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0; /* 靠按钮右缘展开（不溢出视口=修复残缺/显示不全） */
+  left: auto;
+  z-index: 40;
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  padding: var(--pm-space-3, 12px);
+  border: 1px solid var(--border, #dbe3e6);
+  border-radius: 20px;
+  display: grid;
+  gap: var(--pm-space-3, 12px);
+  /* r09：底色由 u-w1-glass 液态玻璃承担 */
+}
+
+.u-w1-app__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.u-w1-app__panel-title { font-size: var(--pm-fs-title, 16px); font-weight: 600; color: var(--text, #1b3038); }
+
+/* 小地球 + tooltip（r04 语义保持） */
+.u-w1-app__globe {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text, #1b3038);
+  cursor: pointer;
+}
+.u-w1-app__globe:focus-visible { outline: 2px solid var(--brand, #176b62); outline-offset: 1px; }
+.u-w1-app__globe-svg { width: 24px; height: 24px; }
+.u-w1-app__globe--on { color: #2a7fd4; }
+.u-w1-app__globe-svg--on { animation: u-w1-globe-in 600ms ease; }
+@keyframes u-w1-globe-in {
+  from { opacity: 0.001; filter: saturate(0); transform: scale(0.86); }
+  to { opacity: 1; filter: saturate(1); transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .u-w1-app__globe-svg--on { animation: none; }
+}
+.u-w1-app__globe-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #10202e;
+  color: #eaf2f8;
+  font-size: 11.5px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.u-w1-app__globe:hover .u-w1-app__globe-tooltip,
+.u-w1-app__globe:focus-visible .u-w1-app__globe-tooltip { opacity: 1; }
+
+.u-w1-app__reset {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text, #1b3038);
+  cursor: pointer;
+}
+.u-w1-app__reset:hover { color: var(--brand, #176b62); }
+.u-w1-app__reset:focus-visible { outline: 2px solid var(--brand, #176b62); outline-offset: 1px; }
+.u-w1-app__reset-svg { width: 20px; height: 20px; }
+
+/* ── 分段滑杆（ChatGPT segmented）：胶囊容器 + 块状白 thumb ── */
+.u-w1-app__segmented {
+  position: relative;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text, #1b3038) 8%, var(--surface, #ffffff));
+  padding: 4px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+}
+.u-w1-app__input {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+}
+.u-w1-app__input:focus-visible { outline: none; }
+/* r09：原生 thumb 透明化（appearance:none 后未定制=浏览器默认蓝点残留且与段中心错位）；
+   拖动/点击仍由整条 input 承担，视觉唯一表达 = 块状 seg-thumb（恒与选中段重合） */
+.u-w1-app__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 44px;
+  border-radius: 999px;
+  background: transparent;
+  border: 0;
+}
+.u-w1-app__input::-moz-range-thumb {
+  width: 12px;
+  height: 44px;
+  border-radius: 999px;
+  background: transparent;
+  border: 0;
+}
+.u-w1-app__segmented:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand, #176b62) 55%, transparent); }
+/* 块状 thumb（r05→r09 修正）：left 用 calc 常量定位（变量×长度乘法兼容性更稳），
+   段宽 = (100% - 8px) / 4，thumb 起点 = 4px + seg × 段宽 —— 恒与选中段重合 */
+.u-w1-app__seg-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: calc(4px + (100% - 8px) / 4 * var(--w1-app-seg, 0));
+  width: calc((100% - 8px) / 4);
+  border-radius: 999px;
+  background: var(--surface, #ffffff);
+  box-shadow: 0 2px 10px rgba(10, 20, 32, 0.18), 0 0 0 1px rgba(10, 20, 32, 0.05);
+  transition: left 250ms cubic-bezier(0.4, 0, 0.1, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .u-w1-app__seg-thumb { transition: none; }
+}
+.u-w1-app__seg-labels {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+  min-height: 44px;
+}
+.u-w1-app__seg-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted, #576c74);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 44px;
+  padding: 0 2px;
+}
+.u-w1-app__seg-label--on { color: var(--text, #1b3038); font-weight: 700; }
+.u-w1-app__seg-label:focus-visible { outline: 2px solid var(--brand, #176b62); outline-offset: -2px; border-radius: 999px; }
+
+/* ── 二级滑杆卡：仅臻彩显示 ── */
+.u-w1-app__subcard {
+  border: 1px solid var(--border, #dbe3e6);
+  border-radius: 16px;
+  padding: var(--pm-space-3, 12px);
+  background: color-mix(in srgb, var(--text, #1b3038) 4%, var(--surface, #ffffff));
+  display: grid;
+  gap: 8px;
+}
+.u-w1-app__subcard-title { margin: 0; font-size: 13px; font-weight: 600; color: var(--text, #1b3038); }
+.u-w1-app__subcard-note { margin: 0; font-size: 12px; color: var(--muted, #576c74); }

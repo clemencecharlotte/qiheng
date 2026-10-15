@@ -1,0 +1,12 @@
+{
+  "note": "混合夹具：展示 有效/隔离(重复)/乱序/拒绝(缺值·NaN·未知单位·无时区) 的判定；不含现场数据",
+  "records": [
+    { "sourceId": "synth-air-2", "entity": "dryer-B1", "metric": "dew_point", "value": -40.0, "unit": "degC", "observedAt": "2026-10-07T09:00:00+08:00" },
+    { "sourceId": "synth-air-2", "entity": "dryer-B1", "metric": "dew_point", "value": -40.0, "unit": "degC", "observedAt": "2026-10-07T09:00:00+08:00" },
+    { "sourceId": "synth-air-2", "entity": "dryer-B1", "metric": "flow", "value": 21.5, "unit": "m3/min", "observedAt": "2026-10-07T08:45:00+08:00" },
+    { "sourceId": "synth-air-2", "entity": "dryer-B1", "metric": "flow", "value": "NaN", "unit": "m3/min", "observedAt": "2026-10-07T09:15:00+08:00" },
+    { "sourceId": "synth-air-2", "entity": "dryer-B1", "metric": "flow", "value": 20.9, "unit": "furlong", "observedAt": "2026-10-07T09:30:00+08:00" },
+    { "sourceId": "synth-air-2", "entity": "dryer-B1", "metric": "flow", "value": 20.9, "unit": "m3/min", "observedAt": "2026-10-07T09:30:00" },
+    { "sourceId": "synth-air-2", "entity": "dryer-B1", "metric": "flow", "unit": "m3/min", "observedAt": "2026-10-07T09:45:00+08:00" }
+  ]
+}

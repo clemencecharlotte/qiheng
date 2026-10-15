@@ -1,0 +1,226 @@
+.context-evidence-rail.context-rail {
+  min-width: 0;
+  padding: 16px;
+  overflow-wrap: anywhere;
+}
+
+.context-evidence-rail .context-head {
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.context-evidence-rail .context-eyebrow {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+.context-evidence-rail .tag {
+  max-width: 100%;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.context-evidence-rail .context-source {
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--raised);
+}
+
+.context-evidence-rail .context-source-label {
+  display: block;
+  font-size: 12px;
+  color: var(--brand);
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.context-evidence-rail .context-source dl {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+
+.context-evidence-rail .context-source dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.context-evidence-rail .context-source dt {
+  color: var(--muted);
+}
+
+.context-evidence-rail .context-source dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.context-evidence-rail .context-body h3 {
+  margin: 0 0 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.context-evidence-rail .context-body .unit-id {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.context-evidence-rail .context-section {
+  margin-top: 16px;
+}
+
+.context-evidence-rail .context-section + .context-section {
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.context-evidence-rail h4 {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 0 0 9px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.context-evidence-rail h4 > span {
+  color: var(--muted);
+  font: 11px var(--mono);
+}
+
+.context-evidence-rail .context-tags {
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.context-evidence-rail .context-facts {
+  margin: 0;
+}
+
+.context-evidence-rail .context-facts > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dotted var(--border);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.context-evidence-rail .context-facts > div:last-child {
+  border-bottom: 0;
+}
+
+.context-evidence-rail .context-facts dd {
+  min-width: 0;
+  text-align: right;
+}
+
+.context-evidence-rail .context-boundary-facts dd {
+  font-family: inherit;
+}
+
+.context-evidence-rail .context-boundary-unverified {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.context-evidence-rail .context-note {
+  padding: 8px 10px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.65;
+  background: var(--raised);
+  border-left: 2px solid var(--border);
+  border-radius: 0 8px 8px 0;
+  color: var(--muted);
+}
+
+.context-evidence-rail .context-boundary-note {
+  border-left-color: var(--warning);
+}
+
+.context-evidence-rail .context-empty {
+  padding: 14px 12px;
+  margin-top: 16px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+.context-evidence-rail .context-empty p,
+.context-evidence-rail .context-help,
+.context-evidence-rail .context-readonly-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.context-evidence-rail .context-empty h4 {
+  margin-bottom: 4px;
+}
+
+.context-evidence-rail .context-actions {
+  margin-top: 16px;
+}
+
+.context-evidence-rail .context-actions .btn {
+  width: 100%;
+  min-height: 44px;
+  white-space: normal;
+  font: inherit;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.context-evidence-rail .context-actions .btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.context-evidence-rail .context-readonly-note {
+  padding-top: 12px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .context-evidence-rail.context-rail {
+    position: static;
+    width: auto;
+    max-height: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .context-evidence-rail .context-facts > div,
+  .context-evidence-rail .context-source dl > div,
+  .context-evidence-rail .context-note,
+  .context-evidence-rail .context-empty p,
+  .context-evidence-rail .context-help {
+    font-size: 16px;
+  }
+
+  .context-evidence-rail h4 {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .context-evidence-rail .context-actions .btn {
+    transition: none;
+  }
+}

@@ -1,0 +1,8 @@
+# 运行时数据与缓存（DB 不入 Git）
+var/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
+__pycache__/
+*.pyc

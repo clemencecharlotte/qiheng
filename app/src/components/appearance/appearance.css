@@ -1,0 +1,163 @@
+/* ═══════════════════════════════════════════════════════════════════
+   M12 r03 · 六环境连续天光背景 + ChatGPT 式滑杆 + 宿主外观接线
+   严格作用域；不改 field-engine 公式/参数；正文始终实底可读。
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 连续天光背景（宿主外层；滑动随 scenePosition 插值）──
+   深色：向深天光收；浅色：向浅天光 mix（深字可读）。 */
+.scene-bg,
+.appearance-host.scene-surface,
+.appearance-welcome-host .qh-backdrop {
+  background:
+    radial-gradient(130% 82% at 50% var(--scene-sun-y, 22%),
+      color-mix(in srgb, var(--scene-glow) var(--scene-glow-alpha, 0.4), transparent) 0%,
+      transparent 58%),
+    radial-gradient(60% 42% at 50% var(--scene-sun-y, 22%),
+      color-mix(in srgb, var(--scene-sun) 30%, transparent) 0%,
+      transparent 70%),
+    linear-gradient(180deg, var(--scene-top) 0%, var(--scene-mid) 46%, var(--scene-bottom) 100%);
+  transition: background 260ms linear;
+}
+[data-theme="light"] .scene-bg,
+[data-theme="light"] .appearance-host.scene-surface,
+[data-theme="light"] .appearance-welcome-host .qh-backdrop {
+  background:
+    radial-gradient(130% 82% at 50% var(--scene-sun-y, 22%),
+      color-mix(in srgb, var(--scene-glow-l, var(--scene-glow)) var(--scene-glow-alpha, 0.4), transparent) 0%,
+      transparent 58%),
+    radial-gradient(60% 42% at 50% var(--scene-sun-y, 22%),
+      color-mix(in srgb, var(--scene-sun-l, var(--scene-sun)) 34%, transparent) 0%,
+      transparent 70%),
+    linear-gradient(180deg, var(--scene-top-l, var(--scene-top)) 0%, var(--scene-mid-l, var(--scene-mid)) 46%, var(--scene-bottom-l, var(--scene-bottom)) 100%);
+}
+
+/* 控制台底色消费同一天光；正文面板/表格各自实底 */
+.app-shell.appearance-host.scene-surface { background-color: transparent; }
+
+/* 欢迎页小入口：左下固定，避开 header/nav */
+.appearance-welcome-host > .appearance-scene-ctl {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 46;
+}
+.appearance-welcome-host .welcome-notes { position: relative; z-index: 2; }
+/* M28 r01：序幕顶部已有唯一外观按钮——此处隐藏重复触发胶囊，仅保留浮层控制器（零占位）。 */
+.appearance-welcome-host > .appearance-scene-ctl.is-controller {
+  left: auto; right: auto; bottom: auto;
+  width: 0; height: 0; overflow: visible;
+}
+
+/* 玻璃：由宿主 --qh-glass-* 驱动工具层/浮层；0 档无 blur 实底 */
+.appearance-host[data-glass="0"] .u-pm-glass {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  background: var(--surface, #fff);
+}
+
+/* ── ChatGPT 式场景滑杆（环境/玻璃共享）── */
+.appearance-scene-ctl { display: grid; gap: 6px; }
+.appearance-scene-ctl-btns { display: flex; gap: 6px; }
+
+.appearance-scene-trigger {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid var(--border, #dbe3e6);
+  border-radius: 999px;
+  background: var(--raised, var(--surface, #fff));
+  color: var(--text, #1b3038);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color .16s ease, color .16s ease, background-color .16s ease;
+}
+.appearance-scene-trigger:hover,
+.appearance-scene-trigger:focus-visible { color: var(--brand, #176b62); border-color: color-mix(in srgb, var(--brand, #176b62) 45%, transparent); }
+.appearance-scene-trigger.on { color: var(--brand, #176b62); border-color: var(--brand, #176b62); }
+.appearance-scene-trigger:focus-visible { outline: 2px solid var(--brand, #176b62); outline-offset: 2px; }
+.appearance-scene-trigger .asc-ico { width: 16px; height: 16px; flex: none; }
+
+/* 局部浮层：实底、无遮罩；定位完全由内联 fixed(top/left) 控制，
+   此处不再设 bottom/left（否则 fixed 上下约束把高度压扁）。 */
+.appearance-scene-pop {
+  position: fixed;
+  z-index: 90; /* 高于移动抽屉(70)，不被打开导航覆盖 */
+  width: min(300px, calc(100vw - 24px));
+  padding: 14px 16px 12px;
+  border: 1px solid var(--border, #dbe3e6);
+  border-radius: 18px;
+  background: var(--surface, #fff);
+  color: var(--text, #1b3038);
+  box-shadow: 0 16px 40px rgba(16, 42, 48, 0.22);
+}
+.appearance-scene-pop .asp-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.appearance-scene-pop .asp-globe,
+.appearance-scene-pop .asp-reset {
+  width: 34px; height: 34px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 9px; background: transparent;
+  color: var(--muted, #576c74); cursor: pointer;
+  transition: color .16s ease, background-color .16s ease;
+}
+.appearance-scene-pop .asp-globe:hover,
+.appearance-scene-pop .asp-reset:hover { color: var(--brand, #176b62); background: color-mix(in srgb, var(--brand, #176b62) 10%, transparent); }
+.appearance-scene-pop .asp-globe.on { color: var(--brand, #176b62); }
+.appearance-scene-pop .asp-ico { width: 20px; height: 20px; }
+
+.appearance-scene-pop .asp-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "label name" "range range";
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 8px 0 10px;
+}
+.appearance-scene-pop .asp-row + .asp-row { border-top: 1px solid color-mix(in srgb, var(--border, #dbe3e6) 60%, transparent); }
+.appearance-scene-pop .asp-row-label { grid-area: label; font-size: 11px; color: var(--muted, #576c74); letter-spacing: .08em; }
+.appearance-scene-pop .asp-row-name { grid-area: name; text-align: right; font-size: 15px; font-weight: 600; color: var(--brand, #176b62); }
+.appearance-scene-pop .asp-range {
+  grid-area: range;
+  width: 100%;
+  margin: 6px 0 0;
+  height: 44px; /* 真实交互热区 ≥44（此前实测仅 ~22） */
+  accent-color: var(--brand, #176b62);
+  cursor: pointer;
+  position: relative; z-index: 1;
+}
+.appearance-scene-pop .asp-range::-webkit-slider-thumb { width: 22px; height: 22px; }
+.appearance-scene-pop .asp-range:disabled { opacity: .45; cursor: default; }
+.appearance-scene-pop .asp-dots {
+  position: absolute;
+  left: 11px; right: 11px; bottom: 17px;
+  display: flex; justify-content: space-between;
+  pointer-events: none; z-index: 2;
+}
+.appearance-scene-pop .asp-dot { width: 4px; height: 4px; border-radius: 50%; background: color-mix(in srgb, var(--brand, #176b62) 45%, transparent); }
+
+/* 折叠 72 侧栏：两控件竖排，不溢出盖数据 */
+.app-rail[data-collapsed="1"] .appearance-scene-ctl-btns { flex-direction: column; }
+.app-rail[data-collapsed="1"] .appearance-scene-trigger { min-width: 0; width: 100%; padding: 0 6px; justify-content: center; }
+.app-rail[data-collapsed="1"] .appearance-scene-trigger .asc-label { display: none; }
+
+/* M13 r04 · 浮层在窄屏不超窗、可滚动；欢迎左下入口紧凑可见 */
+.appearance-scene-pop { max-height: min(72vh, 560px); overflow: auto; }
+@media (max-width: 900px) {
+  .appearance-welcome-host > .appearance-scene-ctl { left: max(10px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .appearance-welcome-host > .appearance-scene-ctl .appearance-scene-trigger { max-width: 54vw; }
+}
+
+/* M14 r01 · 外观浮层：玻璃仅作背景/边界，不参与定位与 overflow（定位由内联 fixed 控制） */
+.appearance-scene-pop {
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--surface, #fff) 97%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  box-shadow: 0 16px 40px rgba(16, 42, 48, 0.24);
+}

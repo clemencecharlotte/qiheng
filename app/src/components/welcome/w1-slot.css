@@ -1,0 +1,39 @@
+/* M17 r01 · W1 融合位点布局（仅宿主间距/栅格；不引入第二套玻璃或背景） */
+.qh-w1-showcase,
+.qh-w1-caps,
+.qh-w1-demos {
+  padding: clamp(2.4rem, 6vw, 5rem) clamp(1.1rem, 4vw, 3rem);
+}
+.qh-w1-showcase {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.qh-w1-caps {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.qh-w1-demos-in {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.qh-w1-demos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(1rem, 3vw, 1.6rem);
+  margin-top: clamp(1.2rem, 3vw, 2rem);
+  align-items: start;
+}
+.qh-w1-showcase .u-w1-scene {
+  border-radius: 1.4rem;
+}
+/* M17r02 · 静态声明走角标 + 页末现有脚注，正文只留真实状态 */
+.qh-w1-capnote {
+  margin: 0.8rem 0 0;
+  font-size: 12px;
+  color: var(--muted, #576c74);
+}
+.qh-w1-caps .qh-w1-capnote {
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+}

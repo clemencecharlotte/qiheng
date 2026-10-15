@@ -1,0 +1,63 @@
+/* D08-W1 r06 · SceneBackdrop——合成器路径。
+   环境层 = 静态完整渐变（paint 一次缓存纹理），运行时仅 opacity 交叉（合成器）；
+   光斑层仅 transform/opacity（合成器）；全屏 repaint 在稳态为零——闪屏根因消除。 */
+
+.u-w1-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1; /* WelcomeField（冻结参照层，z0）之上、页面内容（z2）之下 */
+  pointer-events: none;
+  overflow: hidden;
+  background: #060b1c; /* 兜底底色（层交叉间隙不可见） */
+}
+
+.u-w1-backdrop__sky {
+  position: absolute;
+  inset: 0;
+  will-change: opacity;
+}
+
+/* 光斑层：暖阳（screen 叠加=加亮）与冷月；几何由 transform 驱动 */
+.u-w1-backdrop__orb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 46vmax;
+  height: 46vmax;
+  margin: -23vmax 0 0 -23vmax; /* 中心对齐 translate 锚点 */
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+.u-w1-backdrop__orb--sun {
+  background: radial-gradient(
+    circle closest-side,
+    rgba(255, 244, 224, 0.95) 0%,
+    rgba(255, 224, 170, 0.55) 30%,
+    rgba(255, 200, 140, 0.22) 58%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+}
+.u-w1-backdrop__orb--moon {
+  background: radial-gradient(
+    circle closest-side,
+    rgba(214, 232, 250, 0.9) 0%,
+    rgba(150, 190, 226, 0.4) 34%,
+    rgba(110, 156, 200, 0.16) 60%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+}
+
+/* 颗粒：防 banding（静态） */
+.u-w1-backdrop__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 静态分层仍生效（opacity 由 chase 即时单次写入）；无任何动画 */
+}

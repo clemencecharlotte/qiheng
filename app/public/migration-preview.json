@@ -1,0 +1,8 @@
+{
+  "taskId": "92b2752c-c32b-4978-aba0-0f2314e1e344",
+  "repo": "clemencecharlotte/qiheng-welcome-react",
+  "baseHead": "cf4b0a6f40bab173d3e63ef19324e93a342147c5",
+  "stage": "M4",
+  "buildDir": "dist-next",
+  "localPort": 4181
+}

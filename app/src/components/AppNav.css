@@ -1,0 +1,100 @@
+.app-nav.console-nav {
+  /* M29 r13 · 紧凑八项：菜单区独立滚动，底部（返回序幕/外观）稳定可达。 */
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.console-nav .console-nav-group {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.console-nav .console-nav-group-label {
+  padding: 2px 4px;
+  color: var(--rail-muted);
+  font-size: 11px;
+  text-align: center;
+  letter-spacing: 0.12em;
+}
+
+.console-nav .nav-item {
+  position: relative;
+  min-height: 44px;
+  min-width: 0;
+  /* M29 r15 · 图标+文字同行（覆盖基础 column），紧凑 44–48 有效高度 */
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 6px 10px;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.console-nav .nav-label {
+  font-size: 13px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.console-nav .nav-icon { flex: 0 0 auto; display: inline-flex; }
+
+.console-nav .nav-item.active::before {
+  content: '';
+  position: absolute;
+  inset: 10px auto 10px 0;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--brand);
+}
+
+.console-nav .nav-item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .app-nav.console-nav {
+    gap: 6px;
+  }
+
+  .console-nav .console-nav-group {
+    display: flex;
+    flex: 1 1 0;
+    gap: 4px;
+  }
+
+  .console-nav .console-nav-group-label {
+    display: none;
+  }
+
+  .console-nav .nav-item {
+    min-height: 48px;
+    padding: 5px 2px;
+    border-radius: 10px;
+  }
+
+  .console-nav .nav-item.active::before {
+    inset: auto 18px 0;
+    height: 2px;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .console-nav .nav-item {
+    transition: none;
+  }
+}
+
+/* S1 · 收束态与抽屉（宽度/显隐由 app-shell 的 --rail-w 与 data-open 驱动） */
+.app-rail[data-collapsed="1"] .console-nav .nav-label { display: none; }
+.app-rail[data-collapsed="1"] .console-nav .console-nav-group-label { text-align: center; padding-inline: 0; }
+@media (max-width: 600px) {
+  .console-nav .console-nav-group-label { display: none; }
+  .console-nav .nav-item { min-height: 48px; }
+}

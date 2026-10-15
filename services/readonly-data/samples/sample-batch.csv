@@ -1,0 +1,5 @@
+sourceId,entity,metric,value,unit,observedAt
+synth-air-1,compressor-A3,power,118.5,kW,2026-10-07T08:15:00+08:00
+synth-air-1,compressor-A3,power,119.1,kW,2026-10-07T08:30:00+08:00
+synth-air-1,compressor-A3,discharge_pressure,0.72,MPa,2026-10-07T08:15:00+08:00
+synth-air-1,compressor-A3,energy,36.9,kWh,2026-10-07T08:00:00+08:00

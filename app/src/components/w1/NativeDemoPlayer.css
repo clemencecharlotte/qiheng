@@ -1,0 +1,159 @@
+/* D10 r01 · NativeDemoPlayer——原生媒体播放器（实底、无 blur；触达 ≥44）。
+   M18r02：组件作用域自足样式（不再依赖未挂载 ProductDemo 的 .u-w1-demo__* 副作用）；
+   消费宿主明暗实底文本 token（媒体/事件数据面实底，不套玻璃）；
+   自绘控制行移到媒体下方独立行（不覆盖原生 controls/字幕）。 */
+
+.u-w1-natdemo,
+.u-w1-natdemo *,
+.u-w1-natdemo *::before,
+.u-w1-natdemo *::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* token 映射（宿主明暗主题；实底文本，不引第二套玻璃） */
+.u-w1-natdemo {
+  --pm-surface: var(--surface, #ffffff);
+  --pm-raised: var(--raised, #f4f7f7);
+  --pm-text: var(--text, #1b3038);
+  --pm-muted: var(--muted, #576c74);
+  --pm-border: var(--border, #dbe3e6);
+  --pm-brand: var(--brand, #176b62);
+  --pm-brand-on: var(--primary-text, #ffffff);
+  --pm-danger: var(--danger, #b3261e);
+  --pm-warning: var(--warning, #955819);
+  --pm-fs-title: 16px;
+  --pm-fs-body: 14px;
+  --pm-fs-note: 12px;
+  --pm-space-2: 8px;
+  --pm-space-3: 12px;
+  --pm-space-4: 16px;
+}
+
+.u-w1-natdemo {
+  display: grid;
+  gap: var(--pm-space-3, 12px);
+  border: 1px solid var(--pm-border, #dbe3e6);
+  border-radius: 20px;
+  background: var(--pm-surface, #ffffff); /* 实底（数据区禁 blur） */
+  color: var(--pm-text, #1b3038);
+  padding: var(--pm-space-4, 16px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 媒体舞台：固定视频比例，仅承载媒体/字幕/占位/错误（控制行不在其中） */
+.u-w1-natdemo__stage {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.u-w1-natdemo__video { width: 100%; height: 100%; object-fit: contain; }
+.u-w1-natdemo__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+
+/* 自绘控制行：媒体下方独立行（不绝对定位、不挤压 stage、不遮字幕） */
+.u-w1-natdemo__ctrl {
+  display: flex;
+  align-items: center;
+  gap: var(--pm-space-2, 8px);
+  flex-wrap: wrap;
+}
+.u-w1-natdemo__pct {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--pm-muted, #576c74);
+}
+
+/* ── 组件作用域内的 u-w1-demo__* 样式（自足；不依赖 ProductDemo） ── */
+.u-w1-natdemo .u-w1-demo__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.u-w1-natdemo .u-w1-demo__label { margin: 0; font-size: var(--pm-fs-title, 16px); color: var(--pm-text, #1b3038); }
+.u-w1-natdemo .u-w1-demo__badge {
+  flex: none;
+  font-size: var(--pm-fs-note, 12px);
+  color: var(--pm-muted, #576c74);
+  border: 1px solid var(--pm-border, #dbe3e6);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+  background: var(--pm-surface, #ffffff);
+}
+
+.u-w1-natdemo .u-w1-demo__pending,
+.u-w1-natdemo .u-w1-demo__error {
+  text-align: center;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: var(--pm-space-4, 16px);
+}
+.u-w1-natdemo .u-w1-demo__pending-title { margin: 0; font-weight: 600; color: var(--pm-text, #1b3038); }
+.u-w1-natdemo .u-w1-demo__pending-sub { margin: 0; font-size: var(--pm-fs-note, 12px); color: var(--pm-muted, #576c74); max-width: 40ch; }
+
+/* 错误态：poster 保留 + 实底覆盖层（数据面实底，正文可读） */
+.u-w1-natdemo .u-w1-demo__error {
+  position: absolute;
+  inset: 0;
+  outline: 1px solid color-mix(in srgb, var(--pm-danger, #b3261e) 35%, transparent);
+  background: color-mix(in srgb, var(--pm-surface, #ffffff) 90%, transparent);
+  place-content: center;
+}
+
+.u-w1-natdemo .u-w1-demo__retry {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 var(--pm-space-4, 16px);
+  border-radius: 12px;
+  border: 1px solid var(--pm-brand, #176b62);
+  background: var(--pm-brand, #176b62);
+  color: var(--pm-brand-on, #ffffff);
+  font-size: var(--pm-fs-body, 14px);
+  cursor: pointer;
+}
+.u-w1-natdemo .u-w1-demo__retry:focus-visible { outline: 2px solid var(--pm-brand, #176b62); outline-offset: 2px; }
+
+.u-w1-natdemo .u-w1-demo__events { display: grid; gap: 6px; }
+.u-w1-natdemo .u-w1-demo__events-h {
+  margin: 0;
+  font-size: var(--pm-fs-note, 12px);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--pm-muted, #576c74);
+}
+.u-w1-natdemo .u-w1-demo__event-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.u-w1-natdemo .u-w1-demo__event {
+  display: flex;
+  gap: var(--pm-space-2, 8px);
+  align-items: baseline;
+  font-size: var(--pm-fs-note, 12px);
+}
+.u-w1-natdemo .u-w1-demo__event-at {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  color: var(--pm-muted, #576c74);
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.u-w1-natdemo .u-w1-demo__event-label { color: var(--pm-text, #1b3038); }
+
+.u-w1-natdemo__fixture {
+  margin: 0;
+  font-size: var(--pm-fs-note, 12px);
+  font-weight: 600;
+  color: var(--pm-warning, #955819);
+  border: 1px dashed color-mix(in srgb, var(--pm-warning, #955819) 55%, transparent);
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--pm-warning, #955819) 8%, var(--pm-surface, #ffffff));
+}
+.u-w1-natdemo .u-w1-demo__footnote { margin: 0; font-size: 11.5px; color: var(--pm-muted, #576c74); }

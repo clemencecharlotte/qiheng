@@ -1,0 +1,225 @@
+/* D08-W1 r02 · CapabilityTrack 样式。
+   r02：stage 局部坐标层（out 组不再相对整页）；track 全宽+nav 独立行；
+   token 映射接 baseline（暗主题实底，非白 fallback）。 */
+
+.u-w1-cap,
+.u-w1-cap *,
+.u-w1-cap *::before,
+.u-w1-cap *::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* token 映射（与 D06 r04 ProductMaterial 同源同值；组件作用域，不改全局 CSS） */
+.u-w1-cap {
+  --pm-canvas: var(--canvas, #f1f4f5);
+  --pm-surface: var(--surface, #ffffff);
+  --pm-raised: var(--raised, #f4f7f7);
+  --pm-text: var(--text, #1b3038);
+  --pm-muted: var(--muted, #576c74);
+  --pm-border: var(--border, #dbe3e6);
+  --pm-brand: var(--brand, #176b62);
+  --pm-brand-on: var(--primary-text, #ffffff);
+  --pm-radius: 16px;
+  --pm-fs-title: 16px;
+  --pm-fs-body: 14px;
+  --pm-fs-note: 12px;
+  --pm-space-2: 8px;
+  --pm-space-3: 12px;
+  --pm-space-4: 16px;
+  --pm-dur-hover: 160ms;
+  --pm-ease-ui: cubic-bezier(0.4, 0, 0.1, 1);
+}
+
+.u-w1-cap {
+  display: grid;
+  gap: var(--pm-space-3, 12px);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* tabs：四枚等分 + 选中底板（r02：按真实 tab rect 定位，px 精确） */
+.u-w1-cap__tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 4px;
+  border: 1px solid var(--pm-border, #dbe3e6);
+  border-radius: 14px;
+  background: var(--pm-raised, #f4f7f7);
+  max-width: 560px;
+}
+.u-w1-cap__tab-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  border-radius: 10px;
+  background: var(--pm-brand, #176b62);
+  transition: transform 420ms cubic-bezier(0.4, 0, 0.1, 1), width 420ms cubic-bezier(0.4, 0, 0.1, 1);
+  /* SSR/首帧 fallback：第一档 */
+  width: calc((100% - 8px - 24px) / 4);
+}
+@media (prefers-reduced-motion: reduce) {
+  .u-w1-cap__tab-thumb { transition: none; }
+}
+.u-w1-cap__tab {
+  position: relative;
+  z-index: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pm-muted, #576c74);
+  font-size: var(--pm-fs-body, 14px);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.u-w1-cap__tab--on { color: var(--pm-brand-on, #ffffff); font-weight: 600; }
+.u-w1-cap__tab:focus-visible { outline: 2px solid var(--pm-brand, #176b62); outline-offset: -2px; }
+
+/* 轨道：全宽原生横滑 + snap；overflow 只在此 */
+.u-w1-cap__track {
+  position: relative;
+  display: block;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  padding: 4px 2px 10px;
+  border-radius: 12px;
+}
+.u-w1-cap__track:focus-visible { outline: 2px solid var(--pm-brand, #176b62); outline-offset: -2px; }
+
+/* stage：共同稳定局部坐标层（尺寸由 in 组正常流决定；out 组 absolute 同起点） */
+.u-w1-cap__stage {
+  position: relative;
+  min-width: 100%;
+  display: flex;
+}
+
+.u-w1-cap__group {
+  display: flex;
+  gap: var(--w1-gap, 24px);
+  flex: none;
+  min-width: 100%;
+}
+/* 入组短淡入轻位移（r02：新组从 0 起始正确；out 组走 WAAPI 从当前权重接续） */
+.u-w1-cap__group--in { animation: u-w1-cap-in var(--w1-cross-ms, 420ms) cubic-bezier(0.4, 0, 0.1, 1); }
+@keyframes u-w1-cap-in {
+  from { opacity: 0.001; transform: translateX(14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+/* 出组：absolute 相对 stage（同坐标交叉；WAAPI 写 opacity/transform，fill forwards） */
+.u-w1-cap__group--out {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .u-w1-cap__group--in { animation: none; }
+}
+
+.u-w1-cap__card {
+  flex: none;
+  width: var(--w1-card-w, 360px);
+  scroll-snap-align: start;
+  display: grid;
+  gap: var(--pm-space-2, 8px);
+  align-content: start;
+  padding: var(--pm-space-4, 16px);
+  border: 1px solid var(--pm-border, #dbe3e6);
+  border-radius: 20px;
+  position: relative;
+  z-index: 1;
+  /* r09：底色由 u-w1-glass 液态玻璃承担（正文文字色随主题，玻璃 fill 保证对比） */
+}
+.u-w1-cap__card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.u-w1-cap__card-title { margin: 0; font-size: var(--pm-fs-title, 16px); color: var(--pm-text, #1b3038); }
+.u-w1-cap__card-summary { margin: 0; color: var(--pm-muted, #576c74); font-size: var(--pm-fs-body, 14px); line-height: 1.6; }
+.u-w1-cap__card-foot { margin-top: auto; }
+
+.u-w1-cap__state {
+  flex: none;
+  font-size: var(--pm-fs-note, 12px);
+  border-radius: 999px;
+  padding: 2px 10px;
+  border: 1px solid var(--pm-border, #dbe3e6);
+  color: var(--pm-muted, #576c74);
+  white-space: nowrap;
+  background: var(--pm-surface, #ffffff);
+}
+.u-w1-cap__state--available { color: var(--success, #246b51); border-color: color-mix(in srgb, var(--success, #246b51) 45%, transparent); }
+.u-w1-cap__state--unconfigured { color: var(--warning, #955819); border-color: color-mix(in srgb, var(--warning, #955819) 45%, transparent); }
+.u-w1-cap__state--unavailable { color: var(--pm-muted, #576c74); border-style: dashed; }
+
+.u-w1-cap__open {
+  min-height: 44px;
+  padding: 0 var(--pm-space-4, 16px);
+  border-radius: 12px;
+  border: 1px solid var(--pm-brand, #176b62);
+  background: var(--pm-brand, #176b62);
+  color: var(--pm-brand-on, #ffffff);
+  font-size: var(--pm-fs-body, 14px);
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.u-w1-cap__open:focus-visible { outline: 2px solid var(--pm-brand, #176b62); outline-offset: 2px; }
+.u-w1-cap__no-entry { font-size: var(--pm-fs-note, 12px); color: var(--pm-muted, #576c74); }
+
+/* nav 独立行（r02：不占轨道宽，mobile 轨道全宽=完整首卡+露卡） */
+.u-w1-cap__nav-row { display: flex; align-items: center; gap: var(--pm-space-2, 8px); }
+.u-w1-cap__nav-hint { flex: 1; text-align: center; font-size: var(--pm-fs-note, 12px); color: var(--pm-muted, #576c74); }
+.u-w1-cap__nav {
+  flex: none;
+  width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--pm-border, #dbe3e6);
+  border-radius: 12px;
+  background: var(--pm-surface, #ffffff);
+  color: var(--pm-text, #1b3038);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.u-w1-cap__nav:hover { color: var(--pm-brand, #176b62); border-color: color-mix(in srgb, var(--pm-brand, #176b62) 45%, transparent); }
+.u-w1-cap__nav:focus-visible { outline: 2px solid var(--pm-brand, #176b62); outline-offset: 2px; }
+
+.u-w1-cap__footnote { margin: 0; font-size: 11.5px; color: var(--pm-muted, #576c74); }
+
+/* ══ M17r02 · W1 能力卡按角色接已接受 B5r02 唯一 g 与宿主 token ══
+   卡=card 角色：blur/fill 走宿主 --cg-*（源自 --qh-glass-*，六锚点连续插值）；
+   文本卡保可读性下限（fill ≥ .55），不新增第二参数。主 CTA 不在此列（实底）。 */
+.appearance-host .u-w1-cap .u-glass {
+  -webkit-backdrop-filter: blur(var(--cg-blur, var(--qh-glass-blur, 14px))) saturate(140%);
+  backdrop-filter: blur(var(--cg-blur, var(--qh-glass-blur, 14px))) saturate(140%);
+  background: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-fill-a, var(--qh-glass-fill, 0.92)), 0.55) * 100%), transparent);
+}
+/* g=0：实底清晰（与宿主 data-glass=0 同口径） */
+.appearance-host[data-glass="0"] .u-w1-cap .u-glass {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--surface, #fff);
+}
+/* 无 backdrop-filter 内核：提填充实底防穿字（置于角色规则之后） */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .appearance-host .u-w1-cap .u-glass {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: var(--surface, #fff) !important;
+  }
+}
+/* reduce：玻璃过渡瞬切（不取消模糊，仅去过渡/形变） */
+@media (prefers-reduced-motion: reduce) {
+  .appearance-host .u-w1-cap .u-glass { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .u-w1-cap__nav-hint { display: none; }
+  .u-w1-cap__nav-row { justify-content: space-between; }
+}

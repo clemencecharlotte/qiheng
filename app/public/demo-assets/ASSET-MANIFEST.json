@@ -1,0 +1,80 @@
+{
+ "name": "demo-assets（两条正式预录 UI 资产 + 历史合成夹具）",
+ "note": "本目录两类：①正式预录 UI 资产（ask/process 两视频+两 poster+两 VTT）：真实候选 4245 实际页面操作录制（playwright，无剪辑拼接），由播放入口角标与页末脚注收束其「预录、不代表当前系统状态」属性；不含 LLM/MCP 调用演示；process 无音轨（预录无声）。②历史合成夹具（native-fixture-* 三件）：仅 decode/播放合同验证参考，无气衡流程演示，不用于演示入口。各文件条目 bytes/sha256 为磁盘实测。",
+ "files": [
+  {
+   "path": "public/demo-assets/native-fixture-640x360.mp4",
+   "bytes": 141675,
+   "sha256": "e3f1cd2379ba5efd9d34c0a87a23f96f632413a6e55a35497725ee211ca07437"
+  },
+  {
+   "path": "public/demo-assets/native-fixture-poster.png",
+   "bytes": 4070,
+   "sha256": "c9f8d53a409106f37a282d235cb7cc91c12b8dc25c399178fc24652bac004509"
+  },
+  {
+   "path": "public/demo-assets/native-fixture-zh.vtt",
+   "bytes": 232,
+   "sha256": "5925277244beabe2632f00dde4172ce6f1a0c3aa15866c2b6c7cad98d191aa33"
+  },
+  {
+   "path": "public/demo-assets/ask.webm",
+   "bytes": 3749941,
+   "sha256": "4fd5de395544ca0ea437a3055c1662f2e7dc845cdc7ea2485a6d088c9a9b6a9d",
+   "role": "R3 ask 预录演示（24.68s VP9）：调度总览页内浏览——下滚设备舞台三机组卡与供需趋势（真实画面时间线，详见 ask-zh.vtt）",
+   "source": "4245 候选真实交互 · playwright recordVideo"
+  },
+  {
+   "path": "public/demo-assets/process.webm",
+   "bytes": 3237187,
+   "sha256": "d744de3a322f66adc1ea9b9ac71675ce567da055fa19a86f4252465cdc0ea31c",
+   "role": "R3 process 预录演示（25.00s VP9）：总览→方案比较→复验人审处置区浏览（批准边界可见；未含场景切换/返回欢迎页，详见 process-zh.vtt）",
+   "source": "4245 候选真实交互 · playwright recordVideo"
+  },
+  {
+   "path": "public/demo-assets/ask-poster.png",
+   "bytes": 471663,
+   "sha256": "e5b986d529a5789223c1a262504b9b729fedeadd0380e6c0c642b74eaa8ab740",
+   "role": "ask poster（总览关键帧 t≈3s）",
+   "source": "ffmpeg 抽帧"
+  },
+  {
+   "path": "public/demo-assets/process-poster.png",
+   "bytes": 363493,
+   "sha256": "242cd4b6597b483f9a0d5d022b643bb85e0bb1710889abb4e73ac99809eb1ed7",
+   "role": "process poster（方案比较关键帧 t≈9s）",
+   "source": "ffmpeg 抽帧"
+  },
+  {
+   "path": "public/demo-assets/ask-zh.vtt",
+   "bytes": 980,
+   "sha256": "0e59524cf45d6c0b3495d67c1ba34ccb2953ed173552e0da8681d50352469045",
+   "role": "ask 中文事件时间表（r03：按逐段解码实际画面重写；NOTE 合法块）",
+   "source": "真实操作时间轴",
+   "vtt_note": "合法 NOTE 元信息块承载预录声明；末 cue 不携带声明"
+  },
+  {
+   "path": "public/demo-assets/process-zh.vtt",
+   "bytes": 1143,
+   "sha256": "ed08cb01a238070416dc05ab76e52392685f8a2c06699b7189e13d5dc8ae0e2b",
+   "role": "process 中文事件时间表（r03：按逐段解码实际画面重写；NOTE 合法块）",
+   "source": "真实操作时间轴",
+   "vtt_note": "合法 NOTE 元信息块承载预录声明；末 cue 不携带声明"
+  }
+ ],
+ "final_product_videos": "两条真实产品演示已录制（本 manifest ask/process 件）；播放入口角标+脚注收束预录属性",
+ "final_assets": {
+  "ask": {
+   "title": "问得明白：AC-03 为何未加入（设备/证据界面走查）",
+   "summary": "调度总览页内浏览：下滚设备舞台三机组卡（AC-01 在役/AC-02 待机/AC-03 边界未知·仅监测）与供需趋势；未含详情打开/证据页跳转（真实画面如此，另片补录）",
+   "duration": "24.68s",
+   "has_audio": false
+  },
+  "process": {
+   "title": "看得见过程：候选比较与复验",
+   "summary": "总览→方案比较（基线 17 项违规 vs 建议 0 项）→复验人审处置区浏览（批准边界可见；本片未点击批准/驳回）；未含单机故障/需求突增切换与返回欢迎页（真实画面如此，另片补录）",
+   "duration": "25.00s",
+   "has_audio": false
+  }
+ }
+}

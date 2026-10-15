@@ -1,0 +1,293 @@
+/* ═══════════════════════════════════════════════════════════════════
+   M11 · 统一壳层映射（作用域，仅接线；不重排板块、不覆盖整站风格）
+   · 复用 D06 unified ProductMaterial tokens（.u-pm/.u-pm-glass/.u-pm-data）
+   · 品牌底配文色走 --primary-text（亮 #fff / 暗 #16372e）
+   · 搜索命令内容适配 unified OriginDialog 面板
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* 品牌主行动按钮：配文色走 baseline --primary-text（品牌底对比锚点） */
+.app-shell .btn.primary,
+.qh-welcome .btn.primary,
+.app-shell .btn[data-action='welcome-enter-demo'] {
+  color: var(--primary-text, #ffffff);
+}
+
+/* 工具层/浮层玻璃：仅控制台顶栏与导航条目（数据面板保持实底可读） */
+.app-shell .app-topbar.u-pm-glass {
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  backdrop-filter: blur(12px) saturate(130%);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .app-shell .app-topbar.u-pm-glass { background: var(--surface); }
+}
+
+/* 搜索命令内容：适配 unified 面板（保留既有 .cmd-* 样式） */
+.u-dialog .cmd { display: grid; gap: 10px; }
+.u-dialog .cmd-input-row { display: flex; gap: 8px; align-items: center; margin: 0; }
+.u-dialog .cmd-list { margin: 0; max-height: min(52vh, 420px); overflow: auto; }
+
+/* 账号入口：与顶栏按钮同族 */
+.app-shell .topbar-account { min-height: 44px; }
+
+/* M12 · 外观宿主 token：玻璃档 -> 顶栏（正文数据实底不变） */
+.app-shell.appearance-host .app-topbar.u-pm-glass {
+  -webkit-backdrop-filter: blur(var(--qh-glass-blur, 12px)) saturate(var(--qh-glass-sat, 130%));
+  backdrop-filter: blur(var(--qh-glass-blur, 12px)) saturate(var(--qh-glass-sat, 130%));
+  background: color-mix(in srgb, var(--surface) calc(var(--qh-glass-fill, 0.82) * 100%), transparent);
+}
+/* 非模态外观浮层保持实底，避免高档玻璃半透与正文叠字（不磨砂整页背景） */
+.appearance-pop { background: var(--surface, #fff); }
+
+/* M12 r02 · 脚注角标（路由中立按钮）与回链 */
+.qh-note-ref button { background: transparent; border: 0; color: var(--brand, #176b62); cursor: pointer; font: inherit; padding: 0 1px; text-decoration: underline; }
+.qh-note-ref button:focus-visible { outline: 2px solid var(--brand, #176b62); outline-offset: 1px; }
+.app-footer-notes .qh-note { display: flex; gap: 6px; align-items: baseline; }
+.app-footer-notes .qh-note-back { margin-left: auto; background: transparent; border: 0; color: var(--brand, #176b62); cursor: pointer; font-size: 11px; min-height: 24px; }
+
+/* M12 r03 · 统一形状/材质 token（作用域；一级/二级面板/按钮/card 同族） */
+.app-shell,
+.qh-welcome {
+  --ui-radius: 14px;
+  --ui-radius-sm: 10px;
+  --ui-border: var(--border, #dbe3e6);
+  --ui-surface: var(--surface, #fff);
+  --ui-raised: var(--raised, var(--surface, #fff));
+  --ui-shadow: 0 1px 2px rgba(16, 42, 48, 0.06);
+}
+.app-shell .btn,
+.qh-welcome .btn,
+.app-shell .rail-toggle,
+.app-shell .sub-nav-item { border-radius: var(--ui-radius-sm); }
+.app-shell .panel,
+.app-shell .overview-main > section,
+.qh-welcome .qh-judge,
+.qh-relations,
+.qh-data-ingress,
+.qh-gov-events { border-radius: var(--ui-radius); border-color: var(--ui-border); }
+.app-shell .tag,
+.qh-welcome .tag { border-radius: 999px; }
+/* 工具层/浮层统一玻璃强度（随玻璃档；0 档实底） */
+.app-shell .app-topbar,
+.app-shell .sub-nav,
+.app-shell .panel-head { border-color: var(--ui-border); }
+
+/* M12 r03 · 玻璃档真实映射到工具层/导航/浮层（正文数据实底不变） */
+.appearance-host .app-topbar,
+.appearance-host .sub-nav,
+.appearance-host .app-rail,
+.appearance-host .appearance-scene-pop {
+  -webkit-backdrop-filter: blur(var(--qh-glass-blur, 12px)) saturate(var(--qh-glass-sat, 130%));
+  backdrop-filter: blur(var(--qh-glass-blur, 12px)) saturate(var(--qh-glass-sat, 130%));
+}
+/* M29 r08 · 顶栏与二级 nav 作为同族轻薄区：同一填充，避免两片不同玻璃强包。 */
+.appearance-host .app-topbar,
+.appearance-host .sub-nav { background: color-mix(in srgb, var(--surface) calc(var(--qh-glass-fill, 0.9) * 100%), transparent); }
+/* 玻璃 0 档：无 blur、实底（清晰可读） */
+.appearance-host[data-glass="0"] .app-topbar,
+.appearance-host[data-glass="0"] .sub-nav,
+.appearance-host[data-glass="0"] .app-rail { -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* M12 r03 · 顶栏高度减半、内容紧凑不重叠 */
+.appearance-host .app-topbar { min-height: 40px; padding: 4px var(--shell-inline, 18px); gap: 8px; }
+.appearance-host .topbar-title h1 { font-size: 15px; }
+.appearance-host .topbar-sub { font-size: 11px; }
+
+/* M12 r03 · 窄侧栏：品牌更小、导航紧凑 */
+.appearance-host .app-rail { padding: 10px 8px; gap: 4px; }
+.appearance-host .rail-brand { font-size: 15px; margin-bottom: 4px; }
+
+/* M13 r01 · 顶栏桌面单行 40px（此前实测 68.35px：内容两行+min-height 64 未收） */
+@media (min-width: 901px) {
+  .appearance-host.app-shell .app-topbar {
+    height: 56px;
+    min-height: 56px;
+    max-height: 56px;
+    padding: 0 14px;
+    gap: 12px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .appearance-host.app-shell .app-topbar .topbar-title { min-width: 0; }
+  .appearance-host.app-shell .app-topbar .topbar-title h1 { font-size: 14px; line-height: 1.15; }
+  .appearance-host.app-shell .app-topbar .topbar-sub { font-size: 10.5px; margin: 0; line-height: 1.15; }
+  .appearance-host.app-shell .app-topbar .topbar-actions { margin-left: auto; flex-wrap: nowrap; align-items: center; gap: 8px; }
+  .appearance-host.app-shell .app-topbar .btn,
+  .appearance-host.app-shell .app-topbar button { min-height: 34px; }
+}
+
+/* M13 r02 · 顶栏子元素完整收进 40px 单行（此前 topbar-conn wrap 到 65px 溢出裁切） */
+@media (min-width: 901px) {
+  .appearance-host.app-shell .app-topbar .topbar-conn { flex-wrap: nowrap; max-width: none; max-height: 56px; }
+  .appearance-host.app-shell .app-topbar .topbar-conn-details { position: relative; }
+  .appearance-host.app-shell .app-topbar .topbar-conn-details[open] .topbar-conn-times {
+    position: absolute; top: calc(100% + 6px); right: 0; z-index: 60;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 10px; box-shadow: 0 12px 30px rgba(16, 42, 48, 0.18);
+    white-space: normal; overflow-wrap: anywhere; max-width: 60ch;
+  }
+  .appearance-host.app-shell .app-topbar .topbar-conn-reason { white-space: nowrap; }
+}
+
+/* M13 r02 · 移动端顶栏真实两行：主行（导航/标题/图标动作）+ 独立状态行；重算移出顶栏 */
+@media (max-width: 900px) {
+  .appearance-host.app-shell .app-topbar {
+    height: auto; min-height: 52px; max-height: none;
+    flex-wrap: wrap; row-gap: 6px; padding: 6px 10px; align-items: center;
+  }
+  .appearance-host.app-shell .app-topbar .rail-burger { order: 1; }
+  .appearance-host.app-shell .app-topbar .topbar-title { order: 2; flex: 1 1 auto; min-width: 0; }
+  .appearance-host.app-shell .app-topbar .topbar-title h1 { font-size: 14px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .appearance-host.app-shell .app-topbar .topbar-sub { display: none; }
+  .appearance-host.app-shell .app-topbar .topbar-actions {
+    order: 3; flex: 1 1 100%; flex-wrap: wrap; margin-left: 0; gap: 6px; align-items: center;
+  }
+  .appearance-host.app-shell .app-topbar .topbar-search { min-width: 0; min-height: 44px; }
+  .appearance-host.app-shell .app-topbar .topbar-search .cmd-kbd { display: none; }
+  .appearance-host.app-shell .app-topbar .topbar-pop-btn,
+  .appearance-host.app-shell .app-topbar .topbar-account { min-height: 44px; }
+  /* 连接状态/时钟为第二独立行（诚实状态就近；展开可达） */
+  .appearance-host.app-shell .app-topbar .topbar-conn { flex: 1 1 100%; flex-wrap: wrap; max-width: none; }
+  .appearance-host.app-shell .app-topbar .topbar-clock { flex: 0 0 auto; }
+  .appearance-host.app-shell .app-topbar .topbar-conn-retry { min-height: 44px; }
+}
+
+/* M13 r04 · 移动端：侧栏窄抽屉（仅文字宽）+ 关闭入口 + 竖排；顶栏默认收齐可展开 */
+.rail-close { display: none; }
+.topbar-more { display: none; }
+
+@media (max-width: 900px) {
+  .appearance-host.app-shell .app-rail {
+    position: fixed; top: 0; left: 0; bottom: 0; right: auto;
+    height: 100vh; width: min(112px, 40vw);
+    display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+    transform: translateX(-105%);
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 8px calc(10px + env(safe-area-inset-bottom, 0px));
+    border-right: 1px solid var(--border); border-top: none;
+    box-shadow: 0 12px 48px color-mix(in srgb, #000 28%, transparent);
+    z-index: 70; transition: transform 240ms cubic-bezier(0.4, 0, 0.1, 1);
+  }
+  .appearance-host.app-shell .app-rail[data-open="1"] { transform: none; }
+  .appearance-host.app-shell .rail-close {
+    display: inline-flex; align-self: flex-end; width: 36px; height: 36px;
+    align-items: center; justify-content: center; margin-bottom: 4px;
+    border: 1px solid var(--border); border-radius: 8px; background: transparent;
+    color: var(--rail-text, var(--text)); cursor: pointer;
+  }
+  .appearance-host.app-shell .rail-brand { display: block; text-align: center; font-size: 14px; margin: 2px 0 8px; }
+  .appearance-host.app-shell .app-nav { flex-direction: column; width: auto; justify-content: flex-start; gap: 4px; }
+  .appearance-host.app-shell .console-nav-group { display: contents; }
+  .appearance-host.app-shell .console-nav-group-label { display: none; }
+  .appearance-host.app-shell .nav-item { flex: 0 0 auto; flex-direction: row; justify-content: flex-start; gap: 8px; min-height: 44px; padding: 8px; }
+  .appearance-host.app-shell .nav-icon { display: none; }
+  .appearance-host.app-shell .nav-label { font-size: 13px; white-space: nowrap; }
+  .appearance-host.app-shell .rail-foot { display: grid; gap: 6px; }
+  .appearance-host.app-shell .rail-welcome-link { font-size: 12px; }
+
+  .appearance-host.app-shell .topbar-more {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; margin-left: auto;
+    border: 1px solid var(--border); border-radius: 10px; background: transparent;
+    color: var(--text); cursor: pointer; font-size: 13px;
+  }
+  .appearance-host.app-shell .app-topbar[data-topbar-open="0"] .topbar-actions { display: none; }
+  .appearance-host.app-shell .app-topbar[data-topbar-open="1"] .topbar-actions { display: flex; }
+}
+
+/* M13 r05 · 页末注释折叠：右下角角标按钮控制展开/收起 */
+.app-footer-notes { display: grid; justify-items: end; gap: 6px; }
+.app-footer-toggle {
+  min-height: 32px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent); color: var(--muted);
+  font-size: 11.5px; cursor: pointer;
+}
+.app-footer-toggle:hover, .app-footer-toggle:focus-visible { color: var(--brand); border-color: color-mix(in srgb, var(--brand) 45%, transparent); }
+.app-footer-notes-body[hidden] { display: none; }
+
+/* M13 r05 · 外观入口可达性（左下 + 欢迎 header 同一浮层） */
+.appearance-scene-ctl { pointer-events: auto; }
+.appearance-scene-trigger { position: relative; z-index: 1; }
+.qh-welcome .qh-hdr-appearance { width: 44px; height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.qh-welcome .qh-hdr-appearance svg { width: 19px; height: 19px; }
+
+/* M13 r06 · 说明改为右下角固定角标（在分界线之上），带颜色区分；展开面板向上弹 */
+.app-footer-notes {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 55;
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  width: auto;
+  max-width: none;
+  text-align: right;
+  pointer-events: auto;
+}
+.app-footer-toggle {
+  min-height: 44px; /* 触达 >=44（此前实测 ~32） */
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--brand, #176b62) 42%, var(--border, #dbe3e6));
+  background: color-mix(in srgb, var(--canvas, #f1f4f5) 90%, transparent);
+  color: var(--brand, #176b62);
+  font-size: 11.5px;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  backdrop-filter: blur(8px) saturate(130%);
+  box-shadow: 0 6px 18px rgba(16, 42, 48, 0.18);
+}
+.app-footer-toggle:hover,
+.app-footer-toggle:focus-visible { border-color: var(--brand, #176b62); }
+.app-footer-notes[data-open="1"] .app-footer-toggle { color: var(--text, #1b3038); }
+.app-footer-notes-body {
+  width: min(560px, calc(100vw - 24px));
+  max-height: min(60vh, 520px);
+  overflow: auto;
+  text-align: right;
+  background: color-mix(in srgb, var(--surface, #fff) 97%, transparent);
+  border: 1px solid var(--border, #dbe3e6);
+  border-top: 2px solid color-mix(in srgb, var(--brand, #176b62) 55%, transparent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 16px 40px rgba(16, 42, 48, 0.24);
+}
+/* 页脚本体不再为其预留大块高度（说明已固定右下角） */
+.app-footer { justify-content: flex-end; }
+.welcome-notes { display: contents; }
+
+/* M14 r01 · 移动端顶栏紧凑连接状态角标（默认收齐时仍就近可见动态安全状态） */
+.topbar-status-chip { display: none; }
+@media (max-width: 900px) {
+  .appearance-host.app-shell .topbar-status-chip {
+    display: inline-flex; align-items: center; min-height: 28px; padding: 2px 10px;
+    border: 1px solid var(--border); border-radius: 999px; font-size: 11.5px; color: var(--muted);
+    white-space: nowrap;
+  }
+  .appearance-host.app-shell .topbar-status-error { color: var(--danger); border-color: var(--danger); }
+  .appearance-host.app-shell .topbar-status-ready { color: var(--success); border-color: var(--success); }
+}
+
+/* M16 r02 · D11 SceneBackdrop 层级：场景(z0) → 气流(z1) → 内容(z2)；宿主底色透明让场景可见 */
+.appearance-welcome-host .u-w1-backdrop { z-index: 0; }
+.appearance-welcome-host .qh-backdrop { z-index: 1; background: transparent; }
+.app-shell .u-w1-backdrop { z-index: 0; }
+.app-shell.scene-surface { background: transparent; }
+/* 控制台内容在场景之上 */
+.app-shell .app-body, .app-shell .app-rail { position: relative; z-index: 2; }
+
+/* M16 r03 · 缺陷1：.qh-welcome 自身堆叠语境+不透明底色盖住同级在前 SceneBackdrop →
+   仅宿主作用域令其背景透明（不动源 palette/引擎；气流 canvas 仍在 .qh-backdrop 内可见）。 */
+.appearance-welcome-host .qh-welcome { background: transparent; }
+
+/* M22 r03 B4 · 去 Hero「白烟雾」：移除大半径明亮 text-shadow 与整块 radial 衬底。
+   改由消费端低频读区 + 环境承载色层 + 装饰避让保护文字（不加突兀玻璃卡，不重设计 field-engine）。 */
+.appearance-welcome-host .qh-hero-in { background: none; }
+.appearance-welcome-host .qh-eyebrow,
+.appearance-welcome-host .qh-title,
+.appearance-welcome-host .qh-hero-sub { text-shadow: none; }
+
+/* M29 r03 · #5 公共顶栏状态去重：桌面只保留 ConnectionState；移动收齐时用 ConnectionBadge。
+   此前 ConnectionBadge 外层为可聚焦 Popover 触发，桌面虽藏了内层 chip 仍留空占位可聚焦。 */
+.topbar-badge-slot { display: none; }
+@media (max-width: 900px) {
+  .appearance-host.app-shell .topbar-badge-slot { display: inline-flex; align-items: center; }
+}

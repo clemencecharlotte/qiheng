@@ -1,0 +1,12 @@
+/* M25 B · 状态语义徽标（color+icon+短文字；unknown 不绿；不套玻璃） */
+.u-status { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 1; padding: 2px 8px; border-radius: 999px; border: 1px solid transparent; }
+.u-status__icon svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.u-status--running .u-status__icon svg { fill: currentColor; stroke: none; }
+.u-status--running { color: var(--success, #246b51); border-color: color-mix(in srgb, var(--success, #246b51) 45%, transparent); background: color-mix(in srgb, var(--success, #246b51) 10%, transparent); }
+.u-status--normal { color: var(--success, #246b51); border-color: color-mix(in srgb, var(--success, #246b51) 45%, transparent); }
+.u-status--idle, .u-status--stopped { color: var(--muted, #576c74); border-color: var(--border, #dbe3e6); }
+.u-status--warn { color: var(--warning, #955819); border-color: color-mix(in srgb, var(--warning, #955819) 45%, transparent); }
+.u-status--severe { color: var(--danger, #ad3939); border-color: color-mix(in srgb, var(--danger, #ad3939) 45%, transparent); }
+/* unknown/stale/disabled 一律中性、虚线，绝不绿 */
+.u-status--unknown, .u-status--stale, .u-status--disabled { color: var(--muted, #576c74); border-style: dashed; border-color: var(--border, #dbe3e6); }
+.u-status--disconnected { color: var(--danger, #ad3939); border-style: dashed; border-color: color-mix(in srgb, var(--danger, #ad3939) 45%, transparent); }

@@ -1,0 +1,118 @@
+/* D08-W1 r03 · SceneDial——ChatGPT 风格滑动条（样式直译：胶囊轨道+白圆拇指+拖动放大）。 */
+
+.u-w1-dial {
+  --w1-dial-accent: var(--w1-accent, #7fa8e0);
+  --w1-dial-ink: var(--w1-ink, #e9effc);
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  gap: 4px;
+}
+
+.u-w1-dial__rail {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* 原生 input 全宽透明承担交互（44 触达）；视觉轨道/拇指由伪元素绘制 */
+.u-w1-dial__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.u-w1-dial__input:focus-visible { outline: none; }
+.u-w1-dial__rail:focus-within { border-radius: 999px; box-shadow: 0 0 0 2px color-mix(in srgb, var(--w1-dial-accent) 60%, transparent); }
+
+/* 轨道：6px 胶囊；已填充段 = accent（随环境变色），余段半透明白 */
+.u-w1-dial__input::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--w1-dial-accent) 0%,
+    var(--w1-dial-accent) var(--w1-dial-fill, 0%),
+    color-mix(in srgb, var(--w1-dial-ink, #fff) 26%, transparent) var(--w1-dial-fill, 0%),
+    color-mix(in srgb, var(--w1-dial-ink, #fff) 26%, transparent) 100%
+  );
+}
+.u-w1-dial__input::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--w1-dial-ink, #fff) 26%, transparent);
+}
+.u-w1-dial__input::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--w1-dial-accent);
+}
+
+/* 拇指：白色大圆 + 柔和投影；拖动/按住放大（ChatGPT 行为直译） */
+.u-w1-dial__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  transition: width 120ms ease, height 120ms ease, margin-top 120ms ease;
+}
+.u-w1-dial__input:active::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  margin-top: -9px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.u-w1-dial__input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.u-w1-dial__input:active::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .u-w1-dial__input::-webkit-slider-thumb { transition: none; }
+}
+
+/* 六环境文字刻度：均匀落位（每 20%），点击跳档，当前高亮 */
+.u-w1-dial__ticks {
+  position: relative;
+  height: 32px;
+  margin-top: 2px;
+}
+.u-w1-dial__tick {
+  position: absolute;
+  transform: translateX(-50%);
+  top: 0;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(in srgb, var(--w1-dial-ink, #fff) 74%, transparent);
+  font-size: 12.5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.u-w1-dial__tick--on {
+  color: var(--w1-dial-ink, #fff);
+  font-weight: 700;
+}
+.u-w1-dial__tick:focus-visible { outline: 2px solid var(--w1-dial-accent); outline-offset: 1px; }
+@media (max-width: 480px) {
+  .u-w1-dial__tick { padding: 4px 4px; font-size: 11.5px; }
+}

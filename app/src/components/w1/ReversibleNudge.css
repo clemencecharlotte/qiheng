@@ -1,0 +1,16 @@
+/* D08-W1 · R4 ReversibleNudge 样式（作用域 .u-w1-nudge）。
+   transform 由 useNudgeProgress 内联写入（唯一驱动）；此处只做布局与 reduce 兜底。 */
+
+.u-w1-nudge {
+  will-change: transform, opacity;
+}
+/* 量测 wrapper：自身永不写 transform（保证 getBoundingClientRect 未变换基准） */
+.u-w1-nudge { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .u-w1-nudge__inner {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .u-w1-nudge { will-change: auto; }
+}

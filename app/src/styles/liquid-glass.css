@@ -1,0 +1,240 @@
+/* ═══════════════════════════════════════════════════════════════════
+   M13 · 液态玻璃材质（CtaPassport v1 的六层分解）
+   L1 blur / L2 基色 / L3 边缘光 / L4 gloss 镜面带 / L5 指针高光 / L6 阴影
+   CSS 无实时光追：六层为“光追级光感”的实时近似；参数可查。
+   只给次级按钮/卡片/浮层；数据正文实底（可读优先，卡面用较高基色 α）。
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --lg-blur: 14px;
+  --lg-sat: 150%;
+  --lg-alpha: 62%;              /* 卡片基色（较按钮更高，保数据可读） */
+  --lg-btn-alpha: 46%;         /* 次级按钮基色（照规格 0.46） */
+  --lg-edge: rgba(255, 255, 255, 0.20);
+  --lg-top: rgba(255, 255, 255, 0.22);
+  --lg-bottom: rgba(0, 0, 0, 0.16);
+  --lg-gloss: rgba(255, 255, 255, 0.26);
+  --lg-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  --lg-shadow-far: 0 18px 44px rgba(0, 0, 0, 0.30);
+}
+
+/* 六层材质（卡片/面板/浮层 + 次级按钮统一族） */
+:where(.lg-glass,
+    .app-shell .panel,
+    .app-shell .overview-main > section,
+    .topbar-modal,
+    .u-dialog,
+    .qh-relations,
+    .qh-data-ingress,
+    .qh-gov-events) {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--ui-radius, 14px);
+  border: 1px solid var(--lg-edge);
+  background: color-mix(in srgb, var(--surface, #fff) var(--lg-alpha), transparent);
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  /* L3 边缘光 + L6 阴影 */
+  box-shadow: inset 0 1px 0 var(--lg-top), inset 0 -1px 0 var(--lg-bottom), var(--lg-shadow);
+  transition: box-shadow 240ms cubic-bezier(0.4, 0, 0.1, 1), border-color 240ms ease;
+}
+/* L4 gloss 镜面带 */
+:where(.lg-glass,
+    .app-shell .panel,
+    .app-shell .overview-main > section,
+    .topbar-modal,
+    .u-dialog,
+    .qh-relations,
+    .qh-data-ingress,
+    .qh-gov-events)::before {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: linear-gradient(168deg, var(--lg-gloss) 0%, rgba(255, 255, 255, 0.03) 36%, transparent 62%);
+}
+/* L5 指针高光（跟随 --gx/--gy） */
+:where(.lg-glass,
+    .app-shell .panel,
+    .app-shell .overview-main > section,
+    .topbar-modal,
+    .u-dialog,
+    .qh-relations,
+    .qh-data-ingress,
+    .qh-gov-events)::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: radial-gradient(110px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss), transparent 62%);
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+:where(.app-shell .panel,
+    .app-shell .overview-main > section,
+    .topbar-modal,
+    .u-dialog,
+    .qh-relations,
+    .qh-data-ingress,
+    .qh-gov-events):hover::after,
+:where(.app-shell .panel,
+    .app-shell .overview-main > section,
+    .topbar-modal,
+    .u-dialog,
+    .qh-relations,
+    .qh-data-ingress,
+    .qh-gov-events):focus-within::after { opacity: 1; }
+.lg-glass:hover::after, .lg-glass:focus-within::after { opacity: 1; }
+/* hover 抬升（无位移/无缩放） */
+:where(.app-shell .panel, .app-shell .overview-main > section, .qh-relations, .qh-data-ingress, .qh-gov-events):hover {
+  box-shadow: inset 0 1px 0 var(--lg-top), inset 0 -1px 0 var(--lg-bottom), var(--lg-shadow-far);
+  border-color: color-mix(in srgb, var(--brand, #176b62) 45%, transparent);
+}
+
+/* 次级按钮玻璃（.lg-btn 或非 primary 的 .btn/.u-origin-trigger） */
+.lg-btn,
+.app-shell .btn:not(.primary),
+.qh-welcome .btn.ghost,
+.u-origin-trigger {
+  position: relative !important;
+  overflow: hidden;
+  border: 1px solid var(--lg-edge);
+  border-radius: var(--ui-radius-sm, 10px);
+  background: color-mix(in srgb, var(--surface, #fff) var(--lg-btn-alpha), transparent);
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  box-shadow: inset 0 1px 0 var(--lg-top), inset 0 -1px 0 var(--lg-bottom), var(--lg-shadow);
+  color: var(--text, #1b3038);
+  min-height: 44px;
+  transition: box-shadow 180ms cubic-bezier(0.4, 0, 0.1, 1), border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+.lg-btn::before,
+.app-shell .btn:not(.primary)::before,
+.qh-welcome .btn.ghost::before,
+.u-origin-trigger::before {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(168deg, var(--lg-gloss) 0%, rgba(255, 255, 255, 0.03) 36%, transparent 62%);
+}
+.lg-btn::after,
+.app-shell .btn:not(.primary)::after,
+.qh-welcome .btn.ghost::after,
+.u-origin-trigger::after {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(110px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss), transparent 62%);
+  opacity: 0; transition: opacity 200ms ease;
+}
+.lg-btn:hover::after,
+.app-shell .btn:not(.primary):hover::after,
+.qh-welcome .btn.ghost:hover::after,
+.u-origin-trigger:hover::after,
+.lg-btn:focus-visible::after,
+.app-shell .btn:not(.primary):focus-visible::after,
+.qh-welcome .btn.ghost:focus-visible::after,
+.u-origin-trigger:focus-visible::after { opacity: 1; }
+.lg-btn:hover,
+.app-shell .btn:not(.primary):hover,
+.qh-welcome .btn.ghost:hover,
+.u-origin-trigger:hover {
+  border-color: color-mix(in srgb, var(--brand, #176b62) 45%, transparent);
+  box-shadow: inset 0 1px 0 var(--lg-top), inset 0 -1px 0 var(--lg-bottom), var(--lg-shadow-far);
+}
+.lg-btn:active,
+.app-shell .btn:not(.primary):active,
+.qh-welcome .btn.ghost:active,
+.u-origin-trigger:active { transform: scale(0.98); }
+.lg-btn:focus-visible,
+.app-shell .btn:not(.primary):focus-visible,
+.qh-welcome .btn.ghost:focus-visible,
+.u-origin-trigger:focus-visible { outline: 2px solid var(--brand, #176b62); outline-offset: 3px; }
+
+/* 主 CTA：accent 实底、无玻璃无高光（对比锚点，不参与玻璃体系） */
+.app-shell .btn.primary,
+.qh-welcome .btn.primary {
+  background: var(--brand, #176b62);
+  color: var(--primary-text, #fff);
+  border: 1px solid var(--brand, #176b62);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.app-shell .btn.primary::before,
+.app-shell .btn.primary::after,
+.qh-welcome .btn.primary::before,
+.qh-welcome .btn.primary::after { content: none; }
+.app-shell .btn.primary:hover,
+.qh-welcome .btn.primary:hover { filter: brightness(1.06); }
+
+/* 触屏：无 hover → 高光不显示（按压/焦点等价反馈） */
+@media (hover: none) {
+  :where(.lg-glass, .app-shell .panel, .app-shell .overview-main > section, .topbar-modal,
+      .appearance-scene-pop, .u-dialog, .qh-relations, .qh-data-ingress, .qh-gov-events)::after,
+  .lg-btn::after, .app-shell .btn:not(.primary)::after, .qh-welcome .btn.ghost::after, .u-origin-trigger::after {
+    display: none;
+  }
+}
+
+/* 玻璃 0 档：无 blur、实底清晰 */
+.appearance-host[data-glass="0"] :where(.lg-glass, .app-shell .panel, .app-shell .overview-main > section) {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  background: var(--surface, #fff);
+}
+
+/* M16 r01 · 连续玻璃：宿主 glassIntensity → --qh-glass-* 驱动 --lg-*（六材质锚点插值，不硬档） */
+.appearance-host {
+  --lg-blur: var(--qh-glass-blur, 14px);
+  --lg-sat: var(--qh-glass-sat, 150%);
+  --lg-alpha: calc(var(--qh-glass-fill, 0.62) * 100%);
+  --lg-btn-alpha: calc(var(--qh-glass-btn-fill, 0.46) * 100%);
+  --lg-edge: rgba(255, 255, 255, var(--qh-glass-edge, 0.20));
+  --lg-gloss: rgba(255, 255, 255, var(--qh-glass-gloss, 0.26));
+  /* M22 r02 · A2 阴影单位归一：B5 shadow 语义为层级 0–2（非 0–1 比例）。
+     消费端按层级映射高度/偏移/blur/alpha 分离，合法克制曲线，不截成不透明黑。 */
+  --lg-shadow-lvl: clamp(0, var(--cg-shadow, var(--qh-glass-shadow, 0.2)), 2);
+  --lg-shadow-a: clamp(0.06, calc(0.10 + var(--lg-shadow-lvl) * 0.09), 0.30);
+  --lg-shadow-a-far: clamp(0.08, calc(0.12 + var(--lg-shadow-lvl) * 0.12), 0.42);
+  --lg-shadow: 0 4px calc(10px + var(--lg-shadow-lvl) * 4px) rgba(0, 0, 0, var(--lg-shadow-a));
+  --lg-shadow-far: 0 18px calc(36px + var(--lg-shadow-lvl) * 8px) rgba(0, 0, 0, var(--lg-shadow-a-far));
+}
+
+/* M16 r02 · B5 角色化玻璃消费（连续 g）：button/overlay/data 各自角色参数 */
+.lg-btn,
+.app-shell .btn:not(.primary),
+.qh-welcome .btn.ghost,
+.u-origin-trigger {
+  -webkit-backdrop-filter: blur(var(--cg-btn-blur, var(--qh-glass-blur, 8px))) saturate(140%);
+  backdrop-filter: blur(var(--cg-btn-blur, var(--qh-glass-blur, 8px))) saturate(140%);
+  background: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-btn-fill-a, var(--qh-glass-btn-fill, var(--qh-glass-fill, 0.92))), 0.9) * 100%), transparent);
+}
+.appearance-scene-pop {
+  -webkit-backdrop-filter: blur(var(--cg-overlay-blur, var(--qh-glass-blur, 12px))) saturate(140%);
+  backdrop-filter: blur(var(--cg-overlay-blur, var(--qh-glass-blur, 12px))) saturate(140%);
+  background: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-overlay-fill-a, 0.9), 0.85) * 100%), transparent);
+}
+/* 密集数据：实底下限（blur ≤4、fill ≥.92），可读优先 */
+:is(.qh-relations, .qh-data-ingress, .qh-gov-events, .app-shell .panel.trend-panel, .app-shell .panel.stage-panel) {
+  -webkit-backdrop-filter: blur(var(--cg-data-blur, 4px)) saturate(120%);
+  backdrop-filter: blur(var(--cg-data-blur, 4px)) saturate(120%);
+  background: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-data-fill-a, 0.92), 0.92) * 100%), transparent);
+}
+
+/* ══ M16 r04 · 最终兜底（置于角色规则之后，覆盖全部消费角色）══ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :where(.lg-glass, .app-shell .panel, .app-shell .overview-main > section, .topbar-modal,
+      .appearance-scene-pop, .u-dialog, .qh-relations, .qh-data-ingress, .qh-gov-events,
+      .app-shell .panel.trend-panel, .app-shell .panel.stage-panel),
+  .lg-btn, .app-shell .btn:not(.primary), .qh-welcome .btn.ghost, .u-origin-trigger {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: var(--surface, #fff) !important;
+  }
+}
+/* reduce：瞬切（置于消费过渡之后，防被覆盖） */
+@media (prefers-reduced-motion: reduce) {
+  :where(.lg-glass, .app-shell .panel, .app-shell .overview-main > section, .topbar-modal,
+      .appearance-scene-pop, .u-dialog, .qh-relations, .qh-data-ingress, .qh-gov-events,
+      .app-shell .panel.trend-panel, .app-shell .panel.stage-panel),
+  .lg-btn, .app-shell .btn:not(.primary), .qh-welcome .btn.ghost, .u-origin-trigger,
+  .lg-btn::after, .app-shell .btn:not(.primary)::after, .qh-welcome .btn.ghost::after, .u-origin-trigger::after,
+  :where(.lg-glass, .app-shell .panel, .app-shell .overview-main > section, .topbar-modal,
+      .appearance-scene-pop, .u-dialog, .qh-relations, .qh-data-ingress, .qh-gov-events)::after {
+    transition: none !important;
+  }
+}

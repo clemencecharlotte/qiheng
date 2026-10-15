@@ -1,0 +1,878 @@
+/* 气衡欢迎页（R2/R3 迁入版）
+   作用域严格限定在 .qh-welcome 根节点内，不污染业务页/全局 html/body。
+   颜色只读既有主题变量（--canvas/--surface/--brand/--border/--text/--muted...），
+   随 qiheng.theme.v1 生效；不引入 qiheng.welcome.theme.v2。 */
+
+.qh-welcome {
+  --w-gutter: clamp(24px, 5vw, 88px);
+  --w-shell: 1200px;
+  --w-hdr: 64px;
+  /* 2026-10-06：头部单独的横向留白。第一版只收窄到 43px（1440 下左右各 163），
+     用户反馈"位移量大一点" → 头部改成**通栏**：不再受 --w-shell 的 1200 限制，
+     只留一档贴边留白（1440 下 32px，即品牌 x≈32、按钮右缘≈1408）。
+     正文列仍用 --w-gutter，所以内容对齐一行不动。 */
+  --w-hdr-edge: clamp(16px, 2.2vw, 40px);
+  --w-bg: var(--canvas);
+  --w-surface: var(--surface);
+  --w-raised: var(--raised, var(--surface));
+  --w-text: var(--text);
+  --w-muted: var(--muted);
+  --w-line: var(--border);
+  --w-accent: var(--brand);
+  --w-accent-strong: color-mix(in srgb, var(--brand) 82%, #000);
+  --w-on-accent: var(--primary-text, #fff);
+  --w-plot: var(--plot, var(--brand));
+  --w-radius: 14px;
+  position: relative;
+  z-index: 0;
+  min-height: 100vh;
+  background: var(--w-bg);
+  color: var(--w-text);
+  font-family: system-ui, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* 2026-10-06 横向溢出修复（防御性、可见效果为零）：
+     Spine 的 <svg> 宽度属性由 JS 按 main 实测宽写入；在"经典滚动条"
+     浏览器里，如果属性是在滚动条出现之前测的（或某次布局变化后未重建），
+     它就会比 clientWidth 宽 ~15px，把文档撑出横向滚动条（已在本机用
+     width=clientWidth+15 复现：scrollWidth 1440 → 1455）。
+     用 `overflow-x: clip` 而不是 hidden：clip 不产生滚动容器，
+     position: sticky 的 Process 舞台不受影响（hidden 会破坏 sticky），
+     也不会裁剪 position: fixed 的背景层。Spine 侧另有 clientWidth
+     变化即重建的兜底，见 NarrativeSpine.tsx。 */
+  overflow-x: clip;
+}
+.qh-welcome *,
+.qh-welcome *::before,
+.qh-welcome *::after { box-sizing: border-box; }
+.qh-welcome a { color: inherit; }
+.qh-welcome section { scroll-margin-top: calc(var(--w-hdr) + 12px); }
+
+/* ── 跳转链接 ─────────────────────────────────────────── */
+.qh-welcome .qh-skip {
+  position: absolute; left: var(--w-gutter); top: -60px; z-index: 60;
+  background: var(--w-surface); color: var(--w-text); padding: 10px 16px;
+  border-radius: 8px; border: 1px solid var(--w-line); text-decoration: none;
+}
+.qh-welcome .qh-skip:focus { top: 10px; outline: 2px solid var(--w-accent); outline-offset: 3px; }
+
+/* ── 全幅动态背景（Canvas + Core），纯装饰 ───────────────── */
+.qh-welcome .qh-backdrop {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  background: var(--w-bg);
+}
+.qh-welcome .qh-ambient {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(to right, color-mix(in srgb, var(--w-accent) 7%, transparent) 1px, transparent 1px) 0 0 / 72px 72px,
+    linear-gradient(to bottom, color-mix(in srgb, var(--w-accent) 7%, transparent) 1px, transparent 1px) 0 0 / 72px 72px,
+    radial-gradient(58% 52% at 66% 34%, color-mix(in srgb, var(--w-accent) 12%, transparent), transparent 68%);
+  opacity: .45;
+  transition: opacity .5s ease;
+}
+.qh-welcome .qh-bd-layer {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  transition: opacity .5s ease;
+}
+/* 2026-10-06 用户要求把原版那套线稿设计加回主线：
+   线（6 主节点 + 4 辅助点 + 11 条编辑式折线）由引擎画在 #bg-topology 上，
+   节点文字由引擎注入 #visual-labels。原来这里把整层压到 0.32，等于把线稿压没了；
+   引擎自己按 0.08–0.3 的 alpha 绘制，所以这一层应当保持 1（与原型一致）。 */
+.qh-welcome .qh-bd-layer.qh-topology { opacity: 1; }
+
+/* 语义标签层：位置与文字全部由引擎写（left/top/textContent），这里只管外观。
+   与原型 `.visual-labels .node-label` 同构，字体换成候选版既有的 mono 栈。 */
+.qh-welcome .qh-visual-labels {
+  position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  /* 与 .qh-core / .qh-topology 同一条过渡：Hero 离场时三者同节奏淡出 */
+  transition: opacity .5s ease;
+}
+.qh-welcome .qh-visual-labels .node-label {
+  position: absolute; transform: translate(-50%, 0);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 10.5px; letter-spacing: .1em; line-height: 1.2;
+  color: var(--w-text); white-space: nowrap;
+  padding: 3px 7px; border-radius: 5px;
+  background: color-mix(in srgb, var(--w-bg) 62%, transparent);
+  transition: color .18s ease, background .18s ease, opacity .3s ease;
+}
+/* Core 落位（2026-10-06 第三轮，用户给的原版参考画面）：
+   参考图是原版原型（带 JUDGE MODE 的那版），它的 Core 是 `.core { left:57.5%; top:50% }`
+   + `width: clamp(104px, 9vw, 148px)`，球正好压在 DATA QUALITY 节点上、标签落在环内。
+   这里照参考位对齐（57.5% / 50%），尺寸先按"可以再大一点"放大到 153px，用户随后说"稍微小一点" → 收敛到
+   clamp(104px, 9.6vw, 152px)：1440 下 138px（原版同视口 130px）。
+   注：50% 比 DATA QUALITY 节点的 53% 高 3%，视觉上球略高于链 —— 与参考图一致，
+   所以环不会把节点圆点"吃掉"，只把它的文字含在环内。 */
+.qh-welcome .qh-core {
+  position: absolute; left: 57.5%; top: 50%; width: clamp(104px, 9.6vw, 152px);
+  aspect-ratio: 1; transform: translate(-50%, -50%); color: var(--w-accent);
+  filter: drop-shadow(0 0 24px color-mix(in srgb, var(--w-accent) 22%, transparent));
+  transition: opacity .5s ease;
+}
+.qh-welcome .qh-core svg { width: 100%; height: 100%; }
+.qh-welcome .qh-core-tilt { transform-origin: 60px 60px; }
+/* 2026-10-06：换回原版引擎后，Core 的鼠标追随由引擎写 `--tilt`（±6°，封顶）。
+   这里把变量消费成旋转；SVG <g> 上用 view-box 作 transform-box，
+   否则 60px 60px 的原点会落在元素自身盒而不是 viewBox 坐标系。 */
+.qh-welcome #core-tilt {
+  transform-origin: 60px 60px;
+  transform-box: view-box;
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform .18s ease-out;
+}
+.qh-welcome .qh-core-orbit { transform-origin: 60px 60px; animation: qh-core-spin 26s linear infinite; }
+@keyframes qh-core-spin { to { transform: rotate(360deg); } }
+
+/* Hero 离场后的背景行为（2026-10-06 用户要求；第二轮补充"线稿与球同步"）：
+   **旋转球 + 线稿一起**随下滑淡出、回顶淡入，共用同一条 `opacity .5s ease`，
+   所以两者是同一个节奏（不会一个先没、一个还在）。
+   线稿 = 拓扑 canvas（#bg-topology 上的 6 主节点 + 4 辅助点 + 11 条折线）
+   + 引擎注入的节点标签层（#visual-labels）。
+   气流 canvas（#bg-airflow）与氛围网格（.qh-ambient）**全程保持原样**：
+   背景动图一直留在后面。暂停信号只打在 .qh-backdrop 上（引擎 running() 读的是
+   气流画布属性，所以气流不会被停）。 */
+.qh-welcome .qh-backdrop[data-hero="away"] .qh-core,
+.qh-welcome .qh-backdrop[data-hero="away"] .qh-bd-layer.qh-topology,
+.qh-welcome .qh-backdrop[data-hero="away"] .qh-visual-labels { opacity: 0; }
+.qh-welcome .qh-backdrop[data-hero="away"] .qh-core-orbit { animation-play-state: paused; }
+
+/* 文字保护罩：把压住正文的背景稍微压暗，不框死背景 */
+.qh-welcome .qh-scrim {
+  position: fixed; inset: 0 auto 0 0; width: min(56%, 720px); z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--w-bg) 42%, transparent) 0%,
+    color-mix(in srgb, var(--w-bg) 22%, transparent) 26%,
+    transparent 100%);
+}
+
+/* ── Header ───────────────────────────────────────────── */
+.qh-welcome .qh-hdr {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: var(--w-hdr);
+  background: color-mix(in srgb, var(--w-bg) 82%, transparent);
+  border-bottom: 1px solid var(--w-line);
+}
+.qh-welcome .qh-hdr-in {
+  /* 通栏：左右各留 --w-hdr-edge（不再限 1200），让左图标+文字与右上按钮分开得更开 */
+  max-width: none; margin: 0; padding: 0 var(--w-hdr-edge); height: 100%;
+  display: flex; align-items: center; gap: 24px;
+}
+.qh-welcome .qh-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+.qh-welcome .qh-brand-mark { width: 32px; height: 32px; color: var(--w-accent); flex: none; }
+.qh-welcome .qh-brand-name { display: block; font-weight: 700; letter-spacing: .06em; white-space: nowrap; }
+.qh-welcome .qh-brand-desc { display: block; font-size: 11px; color: var(--w-muted); letter-spacing: .08em; white-space: nowrap; }
+.qh-welcome .qh-hdr-nav { margin-left: auto; display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; }
+.qh-welcome .qh-hdr-nav a { text-decoration: none; font-size: 13px; color: var(--w-muted); }
+.qh-welcome .qh-hdr-nav a:hover, .qh-welcome .qh-hdr-nav a:focus-visible { color: var(--w-accent); }
+/* 2026-10-06：右上角日夜切换按钮（纯图标，无可见文字；原型 #theme-toggle 同款语义：
+   亮色显示月亮＝切到夜间，深色显示太阳＝切到日间）。44px 触控目标。 */
+.qh-welcome .qh-theme-btn {
+  flex: none; width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid transparent; border-radius: var(--w-radius);
+  color: var(--w-text); cursor: pointer; padding: 0;
+  transition: color .2s ease, background .2s ease, border-color .2s ease;
+}
+.qh-welcome .qh-theme-btn:hover,
+.qh-welcome .qh-theme-btn:focus-visible {
+  color: var(--w-accent);
+  background: color-mix(in srgb, var(--w-accent) 8%, transparent);
+  border-color: var(--w-line);
+}
+.qh-welcome .qh-theme-btn svg { width: 19px; height: 19px; }
+html[data-theme="light"] .qh-welcome .qh-theme-btn .ic-sun { display: none; }
+html:not([data-theme="light"]) .qh-welcome .qh-theme-btn .ic-moon { display: none; }
+
+/* ── 主内容 ───────────────────────────────────────────── */
+.qh-welcome .qh-main { position: relative; z-index: 2; padding-top: var(--w-hdr); }
+
+/* ── Hero ─────────────────────────────────────────────── */
+.qh-welcome .qh-hero { min-height: calc(100vh - var(--w-hdr)); display: flex; align-items: center; }
+.qh-welcome .qh-hero-in {
+  max-width: var(--w-shell); margin: 0 auto; padding: 0 var(--w-gutter); width: 100%;
+  min-height: 620px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  gap: var(--w-gutter); align-items: center;
+}
+.qh-welcome .qh-hero-copy { max-width: 34rem; min-width: 0; }
+.qh-welcome .qh-eyebrow { margin: 0 0 18px; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--w-accent); }
+.qh-welcome .qh-title {
+  margin: 0 0 18px; font-size: clamp(34px, 5vw, 62px); line-height: 1.14; font-weight: 700;
+  letter-spacing: -.01em; outline: none;
+}
+.qh-welcome .qh-title .h1-l { display: block; }
+.qh-welcome .qh-title .h1-last { color: var(--w-accent); }
+/* 2026-10-06 用户要求：标题外面那个蓝色方框去掉。
+   .qh-title 是 tabindex="-1" 的标题，挂载时被程序化 focus（读屏需要），
+   于是 :focus-visible 命中下面这条规则，画出 2px --focus(#1e66af) + 6px offset
+   的圆角框，正好把「每个调度方案，都先回答能不能用。」这几行字框住。
+   标题不是可交互控件，去掉它不影响键盘用户的焦点可见性
+   （跳转链接 / 导航 / 按钮各自的 :focus-visible 样式保持原样）。
+   这里显式写 none 是为了压过 styles.css 里的全局 `:focus-visible` 兜底。 */
+.qh-welcome .qh-title:focus,
+.qh-welcome .qh-title:focus-visible { outline: none; }
+.qh-welcome .qh-hero-sub { margin: 0 0 20px; font-size: clamp(15px, 1.4vw, 18px); color: var(--w-text); line-height: 1.7; }
+.qh-welcome .qh-boundary { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 28px; font-size: 13px; color: var(--w-muted); }
+.qh-welcome .qh-boundary svg { width: 18px; height: 18px; color: var(--w-accent); flex: none; }
+.qh-welcome .qh-cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+/* 品牌主按钮：恢复 44px 目标高度与克制的品牌配色（仅限欢迎页） */
+.qh-welcome .btn {
+  min-height: 44px; min-width: 44px; padding: 12px 22px; font-size: 15px;
+  border-radius: 10px; display: inline-flex; align-items: center; gap: 8px;
+}
+.qh-welcome .btn.primary {
+  background: var(--w-accent); color: var(--w-on-accent); border-color: var(--w-accent);
+}
+.qh-welcome .btn.primary:hover { background: var(--w-accent-strong); border-color: var(--w-accent-strong); }
+.qh-welcome .btn.ghost { background: transparent; color: var(--w-text); border-color: var(--w-line); }
+.qh-welcome .btn.ghost:hover { border-color: var(--w-accent); color: var(--w-accent); }
+.qh-welcome .btn.ghost:disabled { opacity: .55; cursor: not-allowed; }
+.qh-welcome .qh-hero-visual { position: relative; min-width: 0; min-height: clamp(240px, 30vw, 440px); }
+.qh-welcome .qh-visual-marks { position: absolute; inset: auto 0 8% 0; }
+.qh-welcome .qh-visual-scale {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px; letter-spacing: .16em; color: var(--w-muted);
+}
+
+/* ── 居中 Scroll to Explore ───────────────────────────── */
+.qh-welcome .qh-cue {
+  position: static; left: auto; bottom: auto; transform: none;
+  margin: 24px auto 0; z-index: 45; text-decoration: none; color: var(--w-muted);
+  display: flex; justify-content: center; padding: 8px 14px;
+}
+/* M22 r04 A3 · cue 参与 Hero 流式布局（margin-top 24 → 与 CTA ≥24px）；低高度压内容间距。 */
+@media (max-height: 760px) {
+  .qh-welcome .qh-hero-in { min-height: auto; gap: clamp(10px, 1.6vh, 20px); }
+  .qh-welcome .qh-title { margin-bottom: 12px; }
+  .qh-welcome .qh-hero-sub { margin-bottom: 12px; }
+  .qh-welcome .qh-boundary { margin-bottom: 16px; }
+}
+.qh-welcome .qh-cue-inner { display: flex; flex-direction: column; align-items: center; gap: 6px; will-change: transform; }
+.qh-welcome .qh-cue-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+  animation: qh-cue-fade 1.8s ease-in-out infinite;
+}
+.qh-welcome .qh-cue-arrow { width: 22px; height: 22px; animation: qh-cue-bob 1.8s ease-in-out infinite; }
+.qh-welcome .qh-cue:hover, .qh-welcome .qh-cue:focus-visible { color: var(--w-accent); }
+@keyframes qh-cue-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+@keyframes qh-cue-fade { 0%,100% { opacity: .58; } 50% { opacity: 1; } }
+
+/* ── Spine（叙事脊柱）──────────────────────────────────── */
+.qh-welcome .qh-spine {
+  position: absolute; left: 0; top: 0;
+  z-index: 1; pointer-events: none; overflow: visible;
+}
+.qh-welcome .qh-spine-base { fill: none; stroke: color-mix(in srgb, var(--w-accent) 24%, transparent); stroke-width: 1.4; }
+.qh-welcome .qh-spine-progress { fill: none; stroke: var(--w-accent); stroke-width: 1.8; stroke-linecap: round; }
+.qh-welcome .qh-spine-node circle { fill: var(--w-bg); stroke: color-mix(in srgb, var(--w-accent) 45%, transparent); stroke-width: 1.4; transition: fill .3s, stroke .3s; }
+.qh-welcome .qh-spine-node[data-on="1"] circle { fill: var(--w-accent); stroke: var(--w-accent); }
+
+/* ── Process 固定舞台 / 自然流 ─────────────────────────── */
+.qh-welcome .qh-rail { border-bottom: 1px solid var(--w-line); }
+.qh-welcome .qh-rail-in { max-width: var(--w-shell); margin: 0 auto; padding: 0 var(--w-gutter); }
+.qh-welcome .proc-sticky { position: relative; }
+.qh-welcome .proc-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+.qh-welcome .rail-item { position: relative; padding: 28px 22px 30px 0; border-top: 2px solid color-mix(in srgb, var(--w-line) 60%, transparent); }
+.qh-welcome .rail-item::before { content: ""; position: absolute; left: 0; top: -2px; height: 2px; width: 0; background: var(--w-accent); transition: width 320ms cubic-bezier(.16,1,.3,1); }
+.qh-welcome .rail-item:hover::before, .qh-welcome .rail-item:focus-within::before { width: 100%; }
+.qh-welcome .rail-key { display: block; margin-bottom: 10px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--w-muted); }
+.qh-welcome .rail-item h3 { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
+.qh-welcome .rail-item p { margin: 0; font-size: 13.5px; color: var(--w-muted); max-width: 28ch; }
+.qh-welcome .proc-media { display: none; }
+.qh-welcome .proc-media-inline { display: flex; align-items: center; gap: 12px; margin-top: 12px; color: var(--w-muted); }
+.qh-welcome .proc-media-inline svg { width: 96px; height: auto; }
+.qh-welcome .pm-tag { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--w-accent); }
+
+@media (min-width: 901px) and (min-height: 621px) and (prefers-reduced-motion: no-preference) {
+  .qh-welcome .qh-rail { height: clamp(220vh, 280vh, 340vh); }
+  .qh-welcome .qh-rail-in { max-width: none; height: 100%; padding: 0; }
+  .qh-welcome .proc-sticky { position: sticky; top: var(--w-hdr); height: calc(100vh - var(--w-hdr)); display: grid; align-items: center; }
+  .qh-welcome .proc-stage {
+    display: grid; align-items: center; grid-template-columns: minmax(300px, 1fr) 1.15fr;
+    gap: clamp(24px, 4vw, 72px); width: min(1296px, 92%); margin-inline: auto;
+  }
+  .qh-welcome .proc-steps { grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: center; }
+  /* 2026-10-06 可逆入场·坑①修法：舞台状态与入场状态**各写各的变量**，最后相乘。
+     原来这里直接写 `opacity: .4` / `[data-active] { opacity: 1 }`（特异性 1,2,1 / 1,3,1），
+     压过 `.qh-welcome.qh-js .rv`（0,3,0），于是首屏时第一步就显示 opacity=1 ——
+     那个"入场"根本没发生。现在：--step-on(舞台) × --rv-on(入场)。 */
+  .qh-welcome #qh-process .proc-steps > li {
+    padding: 14px 20px 16px 24px;
+    --step-on: .72;
+    opacity: calc(var(--step-on) * var(--rv-on, 1));
+    transition: opacity .28s linear;
+  }
+  .qh-welcome #qh-process .proc-steps > li[data-active="1"] { --step-on: 1; }
+  .qh-welcome #qh-process .proc-steps > li[data-active="1"] .rail-key { color: var(--w-accent); }
+  .qh-welcome #qh-process .proc-steps > li[data-active="1"]::before { width: 100%; }
+  .qh-welcome .proc-media { display: block; position: relative; min-height: min(52vh, 460px); }
+  .qh-welcome .pm-frame {
+    position: absolute; inset: 0; opacity: 0; transition: opacity .3s linear;
+    display: grid; align-content: center; justify-items: center; gap: 18px;
+    border: 1px solid var(--material-read-border, var(--w-line)); border-radius: var(--w-radius);
+    /* M29 r30 · 右卡并入读区材质（此前仅 brand 4% 透明 → 深底深字几乎不可见） */
+    background: var(--material-read-fill, var(--w-surface, #fff));
+    -webkit-backdrop-filter: var(--material-read-filter, none); backdrop-filter: var(--material-read-filter, none);
+    box-shadow: var(--material-read-shadow, none);
+    padding: 26px;
+  }
+  .qh-welcome .pm-frame svg { width: min(430px, 82%); height: auto; color: var(--w-text); }
+  .qh-welcome .pm-frame .pm-points li, .qh-welcome .pm-frame .pm-tag { color: var(--w-text); }
+  .qh-welcome #qh-process[data-proc-index="0"] .pm-frame[data-media-step="0"],
+  .qh-welcome #qh-process[data-proc-index="1"] .pm-frame[data-media-step="1"],
+  .qh-welcome #qh-process[data-proc-index="2"] .pm-frame[data-media-step="2"],
+  .qh-welcome #qh-process[data-proc-index="3"] .pm-frame[data-media-step="3"] { opacity: 1; }
+  .qh-welcome .proc-media-inline { display: none; }
+}
+
+/* ── Flow value（决策路径）────────────────────────────── */
+.qh-welcome .qh-flowval { min-height: 90vh; padding: clamp(56px, 7vw, 104px) 0; }
+.qh-welcome .qh-flowval-in { max-width: var(--w-shell); margin: 0 auto; padding: 0 var(--w-gutter); }
+.qh-welcome .qh-flowval-top { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--w-gutter); align-items: end; margin-bottom: clamp(32px, 5vw, 64px); }
+.qh-welcome .qh-flowval h2 { margin: 8px 0 0; font-size: clamp(26px, 3.4vw, 42px); line-height: 1.2; }
+.qh-welcome .qh-flowval h2 .fv-l { display: block; }
+.qh-welcome .qh-flowval-sub { margin: 0; color: var(--w-muted); font-size: 15px; line-height: 1.7; }
+.qh-welcome .qh-flowval-stage { border: 1px solid var(--w-line); border-radius: var(--w-radius); background: color-mix(in srgb, var(--w-surface) 70%, transparent); padding: clamp(20px, 3vw, 34px); }
+/* r40：fv-hd/fv-tag/fv-live/fv-flow/fv-node/fv-idx/fv-en/fv-cn/fv-aux/fv-ft 随死 DOM 移除
+   （全仓无 TSX 消费者；fv-l 保留在上方 .qh-flowval h2 规则中）。 */
+
+/* ── Proof / Passport ─────────────────────────────────── */
+.qh-welcome .qh-proof { padding: clamp(56px, 7vw, 104px) 0; }
+.qh-welcome .qh-proof-in { max-width: var(--w-shell); margin: 0 auto; padding: 0 var(--w-gutter); display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .9fr); gap: var(--w-gutter); align-items: start; }
+.qh-welcome .qh-proof h2 { margin: 8px 0 12px; font-size: clamp(24px, 3vw, 36px); line-height: 1.25; }
+.qh-welcome .qh-proof-list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 10px; }
+.qh-welcome .qh-proof-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.qh-welcome .qh-proof-list svg { width: 16px; height: 16px; color: var(--w-accent); flex: none; margin-top: 3px; }
+/* r40：qh-flow-rail/qh-flow-shot 随死 DOM 移除（PassportProofRail 已替代，contentContracts 断言 qh-flow-shot=0）。 */
+.qh-welcome .qh-judge { margin-top: 26px; border: 1px solid var(--w-line); border-radius: var(--w-radius); padding: 16px 18px; }
+.qh-welcome .qh-judge-hd { margin: 0 0 10px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; letter-spacing: .16em; color: var(--w-accent); }
+.qh-welcome .qh-judge-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.qh-welcome .qh-judge-steps a { display: grid; grid-template-columns: 28px auto; gap: 2px 10px; text-decoration: none; padding: 8px; border-radius: 8px; }
+.qh-welcome .qh-judge-steps a:hover, .qh-welcome .qh-judge-steps a:focus-visible { background: color-mix(in srgb, var(--w-accent) 8%, transparent); }
+.qh-welcome .qh-judge-steps b { grid-row: span 2; font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--w-accent); }
+.qh-welcome .qh-judge-steps em { font-style: normal; font-size: 11.5px; color: var(--w-muted); }
+.qh-welcome .qh-judge-note { margin: 10px 0 0; font-size: 11.5px; color: var(--w-muted); }
+
+.qh-welcome .qh-passport { border: 1px solid var(--w-line); border-radius: var(--w-radius); background: var(--w-surface); padding: 16px 18px; }
+.qh-welcome .qh-passport-hd { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.qh-welcome .qh-passport-hd span { font-size: 11px; color: var(--w-muted); letter-spacing: .12em; }
+/* r40：qh-passport-rows 随"最新护照详情收敛为指引"移除（数据不再与 PassportProofRail 双显）。 */
+.qh-welcome .qh-passport-ft { margin-top: 12px; font-size: 11.5px; color: var(--w-muted); }
+.qh-welcome .qh-state { padding: 1px 8px; border-radius: 999px; font-size: 11.5px; }
+.qh-welcome .qh-state.pass { color: var(--w-accent); background: color-mix(in srgb, var(--w-accent) 14%, transparent); }
+.qh-welcome .qh-state.wait { color: var(--w-muted); background: color-mix(in srgb, var(--w-line) 60%, transparent); }
+
+/* ── Bounds / Bottom CTA / Footer ─────────────────────── */
+.qh-welcome .qh-bounds { padding: clamp(48px, 6vw, 84px) 0; border-top: 1px solid var(--w-line); }
+.qh-welcome .qh-bounds-in, .qh-welcome .qh-cta-in { max-width: var(--w-shell); margin: 0 auto; padding: 0 var(--w-gutter); }
+.qh-welcome .qh-bounds h2, .qh-welcome .qh-cta-sec h2 { margin: 8px 0 14px; font-size: clamp(22px, 2.8vw, 34px); }
+.qh-welcome .qh-cta-sec { padding: clamp(48px, 6vw, 84px) 0; text-align: center; }
+.qh-welcome .qh-cta-sec .qh-cta-row { justify-content: center; }
+.qh-welcome .qh-lede { margin: 0 0 20px; color: var(--w-muted); }
+.qh-welcome .qh-ftr { border-top: 1px solid var(--w-line); }
+.qh-welcome .qh-ftr-in { max-width: var(--w-shell); margin: 0 auto; padding: 24px var(--w-gutter); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; color: var(--w-muted); font-size: 12px; }
+
+/* ── 入场 reveal（一次；不 1.8s 全揭）──────────────────── */
+/* 仅在 JS 已挂载（根节点带 .qh-js）时隐藏，脚本失败/未运行则内容直接可见。 */
+/* ══ 入场：把"一次性事件"改成"滚动位置的函数"（2026-10-06 采用支线同步技术）══
+   问题：老实现命中即 io.unobserve()，只 add('in') 从不移除 → 上滚不还原、再下滚不重播；
+        同一 scrollY 在不同方向下状态不同（实测主线改前 228/468 个不一致点）。
+   两层（正交）：
+     ① 首选 CSS 滚动驱动：animation-timeline: view() —— 进度 = 元素在视口中的位置，
+        天然可逆可重播、无 JS 计时器、视口外不点亮。JS 只负责打 html.rv-timeline 标记。
+     ② 退化（老内核/不支持）：JS 双向幂等，出入场共用一条阈值线 → 同一 scrollY ⇒ 同一状态。
+   入场状态统一收敛到一个注册过的自定义属性 --rv-on（0→1），
+   这样第二个系统（Process 舞台）可以用乘法叠加，而不是抢同一个 opacity。 */
+@property --rv-on {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;          /* 默认可见：脚本没跑 / 没加 .qh-js 时内容不隐藏 */
+}
+.qh-welcome.qh-js .rv {
+  --rv-on: 0;
+  opacity: var(--rv-on);
+  transform: translateY(calc((1 - var(--rv-on)) * 18px));
+  transition: opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1);
+}
+.qh-welcome.qh-js .rv.in { --rv-on: 1; }
+
+/* 退化路径的测量期（useReveal 的 measure()）：把入场状态中性化，
+   否则 translateY(18px) 会被 getBoundingClientRect() 量进几何 → 自反馈（见 JS 注释坑②）。 */
+.qh-welcome.qh-measure .rv {
+  --rv-on: 1 !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* ① 滚动驱动时间线：只在浏览器支持且非 reduced-motion（JS 判定）时挂上。
+   ⚠ 关键：keyframes **只驱动 `--rv-on`**，不直接写 opacity/transform ——
+   否则动画的 `opacity: 1` 会像老实现那样再次压掉 Process 步骤的
+   `calc(var(--step-on) * var(--rv-on))`（实测：四步全变 1，舞台高亮消失）。
+   由于 --rv-on 是注册过的 <number> 属性，它按帧插值，派生出的 opacity/transform 自然跟随。 */
+@supports (animation-timeline: view()) {
+  html.rv-timeline .qh-welcome .rv {
+    animation: qh-rv-view-in linear both;
+    animation-timeline: view();
+    animation-range: entry 12% cover 34%;
+    transition: none;              /* 动画负责动，别再叠一层 transition */
+  }
+  @keyframes qh-rv-view-in {
+    from { --rv-on: 0; }
+    to   { --rv-on: 1; }
+  }
+}
+
+/* ── 中屏/窄屏 ────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .qh-welcome .qh-hero-in { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-top: 48px; padding-bottom: 72px; }
+  .qh-welcome .qh-hero-visual { display: none; }
+  .qh-welcome .qh-flowval-top { grid-template-columns: minmax(0, 1fr); }
+  .qh-welcome .qh-proof-in { grid-template-columns: minmax(0, 1fr); }
+}
+/* 引擎的 small 断点是 760px：此宽度以下它改用"Hero 下方局部视觉区"
+   （x 5%–95% × y 58.5%–86%）。Core 跟着落到那个区里，别飘在正文上；
+   节点文字按原型 §16 在窄屏隐藏（引擎本身也只在指针靠近时才建标签）。 */
+@media (max-width: 760px) {
+  .qh-welcome .qh-hdr-nav { display: none; }
+  /* 导航隐藏后，靠 .qh-hdr-nav 的 margin-left:auto 撑开的右侧位置没了，
+     让主题按钮自己接管右对齐（窄屏也保留这个按钮）。 */
+  .qh-welcome .qh-theme-btn { margin-left: auto; }
+  .qh-welcome .qh-core { left: 50%; top: 72.8%; width: clamp(84px, 22vw, 116px); }
+  .qh-welcome .qh-visual-labels .node-label { display: none; }
+}
+/* r40：原 ≤640px 的 fv-flow / ≤380px 的 fv-flow 列数规则随死 DOM 移除（无新规则替代）。 */
+/* 短手机：压缩纵向留白，避免护照次入口与 cue 重叠（保留按钮尺寸） */
+@media (max-width: 480px) and (max-height: 620px) {
+  .qh-welcome .qh-hero-in { padding-top: 28px; padding-bottom: 56px; }
+  .qh-welcome .qh-eyebrow { margin-bottom: 10px; }
+  .qh-welcome .qh-title { font-size: clamp(28px, 9vw, 38px); }
+  .qh-welcome .qh-hero-sub { margin-bottom: 12px; }
+  .qh-welcome .qh-boundary { margin-bottom: 16px; }
+  .qh-welcome .qh-cue { bottom: 20px; }
+}
+
+/* ── reduced-motion：自然流静态可读 ───────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .qh-welcome .qh-core-orbit { animation: none; }
+  .qh-welcome .qh-cue-arrow, .qh-welcome .qh-cue-label { animation: none; }
+  .qh-welcome .qh-cue { transition: none; }
+  /* 时间线接管时也要关掉，避免"系统改成 reduce"后仍在滚动驱动 */
+  html.rv-timeline .qh-welcome .rv { animation: none; }
+  /* 底线：reduced-motion 下内容一律可读（opacity=1、无位移），绝不出现"看不见的正文" */
+  .qh-welcome.qh-js .rv,
+  .qh-welcome .rv {
+    --rv-on: 1;
+    opacity: 1;
+    transform: none;
+    transition: opacity .2s linear;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   审美移植 R1（2026-10-07）—— 自旧任务 f9860ee7 aesthetic-port-r1b 同步
+   依据：《气衡-网站与作品参考清单-20261006》，只借交互语法，不搬品牌皮肤。
+   排版骨架与文案零改动；零新增动画；reduced-motion 全兼容；
+   全部规则集中在文件末尾，便于整体回退与未来候选包合并。
+   ⚠ 用户裁决（2026-10-07）：背景设计不在本次移植范围——主线背景以
+   上传候选包（原版 field-engine.js 引擎）为准。原 P2 能量桥、P7 结尾
+   光场、P8 护照渐入三处背景类渐变已整块移除，此处只留前景小设计。
+   ═════════════════════════════════════════════════════════════════ */
+
+/* P1 渐隐缝（Vercel）：分界线两端淡出，段落像被同一条路径串起来。
+   border-image 只重绘既有的 1px 边框，盒模型零变化。 */
+.qh-welcome .qh-rail, .qh-welcome .qh-bounds, .qh-welcome .qh-ftr {
+  border-image: linear-gradient(90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--w-accent) 12%, var(--w-line)) 16%,
+    color-mix(in srgb, var(--w-accent) 12%, var(--w-line)) 84%,
+    transparent 100%) 1;
+}
+
+/* P2 能量桥（Lusion）：已按用户裁决移除 —— 背景设计以候选包（原版引擎）为准。 */
+
+/* P3 标签刻度：节首标签统一 14px 强调色短线（编辑式封面的仪表语法）。 */
+.qh-welcome .qh-eyebrow { display: flex; align-items: center; gap: 10px; }
+.qh-welcome .qh-eyebrow::before {
+  content: ""; width: 14px; height: 1px; flex: none;
+  background: color-mix(in srgb, var(--w-accent) 55%, transparent);
+}
+
+/* P4 字阶统一（Linear）：proof 40 / bounds·cta 42，与 flowval 42 同族；
+   H1（62）仍是唯一主角，节标题层级读得出来。 */
+.qh-welcome .qh-proof h2 { font-size: clamp(26px, 3vw, 40px); }
+.qh-welcome .qh-bounds h2, .qh-welcome .qh-cta-sec h2 { font-size: clamp(26px, 3vw, 42px); }
+
+/* P5 舞台角标：flowval-stage 与 pm-frame 四角 L 形工程刻度，
+   8 条 1px 渐变实现，无新元素、无文字。 */
+.qh-welcome .qh-flowval-stage { position: relative; }
+.qh-welcome .qh-flowval-stage, .qh-welcome .pm-frame {
+  --w-stage-tick: color-mix(in srgb, var(--w-accent) 40%, transparent);
+}
+.qh-welcome .qh-flowval-stage::after, .qh-welcome .pm-frame::after {
+  content: ""; position: absolute; inset: 8px; pointer-events: none;
+  background-image:
+    linear-gradient(var(--w-stage-tick), var(--w-stage-tick)),
+    linear-gradient(var(--w-stage-tick), var(--w-stage-tick)),
+    linear-gradient(var(--w-stage-tick), var(--w-stage-tick)),
+    linear-gradient(var(--w-stage-tick), var(--w-stage-tick)),
+    linear-gradient(var(--w-stage-tick), var(--w-stage-tick)),
+    linear-gradient(var(--w-stage-tick), var(--w-stage-tick)),
+    linear-gradient(var(--w-stage-tick), var(--w-stage-tick)),
+    linear-gradient(var(--w-stage-tick), var(--w-stage-tick));
+  background-repeat: no-repeat;
+  background-size: 18px 1px, 1px 18px, 18px 1px, 1px 18px,
+                   18px 1px, 1px 18px, 18px 1px, 1px 18px;
+  background-position: left top, left top, right top, right top,
+                       left bottom, left bottom, right bottom, right bottom;
+}
+
+/* P6 r40：fv-node hover/fv-ft/flow-rail hover 提亮随死 DOM 移除。 */
+
+/* P7 结尾落点（Palantir）：已按用户裁决移除 —— 背景设计以候选包（原版引擎）为准。 */
+
+/* P8 护照顶部渐入：已按用户裁决移除 —— 背景设计以候选包（原版引擎）为准。 */
+
+/* P9 r40：641–900px 四列收两列规则随 fv-flow/flow-rail 死 DOM 移除。 */
+
+/* P10 选区色跟随强调色（作用域限定在欢迎页内）。 */
+.qh-welcome ::selection { background: color-mix(in srgb, var(--w-accent) 30%, transparent); }
+
+/* 移植修正：页尾居中的 eyebrow 转 flex 后必须补 justify-content:center，
+   否则 ::before 短线与文字整体偏离中心轴。 */
+.qh-welcome .qh-cta-sec .qh-eyebrow { justify-content: center; }
+
+/* ── r1c · 第一档打磨（2026-10-07，参考复挖落地）─────────────────────
+   依旧零文案/零背景/零排版骨架；transform 类 hover 均带 reduced-motion 关闭。 */
+
+/* P11 按压态（Linear/DesignSpells）：可点元素按下时下沉 1px。
+   全局 .btn 无 transition 定义，这里只声明 transform，不影响既有 hover 配色。 */
+.qh-welcome .btn { transition: transform .15s ease; }
+.qh-welcome .btn:active { transform: translateY(1px); }
+
+/* P12 r40：媒体焦点框（.qh-flow-shot ::after 对焦）随死 DOM 移除。 */
+
+/* P13 导航下划线生长（Obys/Vercel）+ scrollspy 当前节点亮（aria-current）。 */
+.qh-welcome .qh-hdr-nav a { position: relative; }
+.qh-welcome .qh-hdr-nav a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
+  background: var(--w-accent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .24s cubic-bezier(.16,1,.3,1);
+}
+.qh-welcome .qh-hdr-nav a:hover::after,
+.qh-welcome .qh-hdr-nav a[aria-current="true"]::after { transform: scaleX(1); }
+.qh-welcome .qh-hdr-nav a[aria-current="true"] { color: var(--w-accent); }
+
+/* P14 r40：护照数值列等宽数字规则随 qh-passport-rows 收敛移除。 */
+
+/* P15 judge 快捷卡 hover 补边框提亮 + 上浮 1px，与 fv-node 同语言。 */
+.qh-welcome .qh-judge-steps a {
+  border: 1px solid transparent;
+  transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+}
+.qh-welcome .qh-judge-steps a:hover, .qh-welcome .qh-judge-steps a:focus-visible {
+  border-color: color-mix(in srgb, var(--w-accent) 45%, transparent);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qh-welcome .btn, .qh-welcome .qh-judge-steps a { transition: none; }
+  .qh-welcome .btn:active, .qh-welcome .qh-judge-steps a:hover { transform: none; }
+  .qh-welcome .qh-hdr-nav a::after { transition: none; }
+}
+
+/* ── r2 · 收尾打磨（2026-10-07，参考复挖第二批评审后落地）───────────
+   依旧：零文案 / 零动图背景 / 零大框架；动效全部带 reduced-motion 关闭。 */
+
+/* P16 方向性入场（Lusion）：右栏元素从右侧 16px 进入，与左栏的纵向升起
+   形成方向语义（hero-visual / flowval-sub / passport 都在右栏）。
+   M4 兼容位置驱动可逆入场：位移由既有 --rv-on 派生，不增加独立状态。 */
+.qh-welcome.qh-js .qh-hero-visual,
+.qh-welcome.qh-js .qh-flowval-sub,
+.qh-welcome.qh-js .qh-passport { transform: translateX(calc((1 - var(--rv-on, 1)) * 16px)); }
+
+/* P17 激活步骤底色（Linear）：sticky 舞台当前步除了顶部 accent 线，
+   再给 5% 底色 + 圆角，滚动扫过时"当前读在哪一步"一眼可辨。 */
+.qh-welcome #qh-process .proc-steps > li[data-active="1"] {
+  /* M25 r06 B：激活态保读区底（不再 5% 透明覆盖），accent 只做进度/轻高光 */
+  background: color-mix(in srgb, var(--w-bg) 72%, transparent);
+  box-shadow: inset 3px 0 0 var(--w-accent);
+  border-radius: 10px;
+  transition: opacity .28s linear, background-color .28s linear, box-shadow .28s linear;
+}
+
+/* P18 r40：呼吸点 fv-live 与 qh-fv-pulse 随死 DOM 移除。 */
+
+/* P19 r40：护照账本分隔线随 qh-passport-rows 收敛移除。 */
+
+/* P20 r40：fv-cn 中文层级随死 DOM 移除。 */
+
+@media (prefers-reduced-motion: reduce) {
+  .qh-welcome.qh-js .qh-hero-visual:not(.in),
+  .qh-welcome.qh-js .qh-flowval-sub:not(.in),
+  .qh-welcome .qh-passport:not(.in) { transform: none; }
+}
+
+/* ── M4 内容补齐（前景文案层；零新增动画/背景，严格 .qh-welcome 作用域）─────
+   ② ProcessStage 四步的可读内容（桌面舞台与移动内联共用同一份 points）；
+   ③ 护照空态说明 + 复用已有演示入口。
+   r40：① flow-rail 缩略框规则随死 DOM 移除。 */
+
+.qh-welcome .pm-points {
+  list-style: none; margin: 8px 0 0; padding: 0;
+  display: grid; gap: 4px; font-size: 12px; color: var(--w-muted);
+}
+.qh-welcome .pm-points li { position: relative; padding-left: 14px; }
+.qh-welcome .pm-points li::before {
+  content: ""; position: absolute; left: 0; top: .6em;
+  width: 6px; height: 1px; background: color-mix(in srgb, var(--w-accent) 55%, transparent);
+}
+.qh-welcome .proc-media-inline { flex-direction: column; align-items: flex-start; }
+.qh-welcome .proc-media-inline .pmi-top { display: flex; align-items: center; gap: 12px; }
+.qh-welcome .pm-frame .pm-points { width: min(360px, 86%); }
+
+.qh-welcome .qh-passport-empty { display: grid; gap: 10px; justify-items: start; }
+
+/* 图1：居中大标题/副文/双 CTA；拓扑/core 留在背景，不压正文 */
+.qh-welcome .qh-hero-in {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: clamp(12px, 1.8vh, 22px);
+  padding-bottom: 0;
+}
+.qh-welcome .qh-hero-copy { max-width: 46rem; min-width: 0; display: grid; justify-items: center; }
+.qh-welcome .qh-cta-row { justify-content: center; }
+.qh-welcome .qh-hero-visual { display: none; }
+
+/* 图3：注册/登录移到 header 与主题同组（44 命中） */
+.qh-welcome .qh-hdr-actions { display: flex; align-items: center; gap: 10px; }
+.qh-welcome .qh-hdr-actions .qh-hdr-auth {
+  min-height: 44px; padding: 0 16px; border-radius: var(--w-radius); font-size: 13px;
+}
+
+/* 图4 r40：flow-rail/flow-shot 防重叠规则随死 DOM 移除。 */
+
+/* 图7：CTA 与 SCROLL TO EXPLORE/cue 由流式 margin-top:24 保安全间距（不再 absolute bottom）。 */
+@media (max-width: 760px) {
+  .qh-welcome .qh-hdr-actions { margin-left: auto; }
+  .qh-welcome .qh-hdr-actions .qh-theme-btn { margin-left: 0; }
+}
+
+
+/* ── M12 r02 · 窄屏顶栏不裁 + 桌面 core/topology/labels 组合避让正文 ── */
+.qh-welcome .qh-hdr-in { min-width: 0; flex-wrap: nowrap; }
+.qh-welcome .qh-hdr-actions { flex-wrap: nowrap; }
+.qh-welcome .qh-hdr-auth { white-space: nowrap; }
+.qh-welcome .qh-brand { min-width: 0; }
+
+/* 桌面：core + topology + labels 作为一致组合右移避让居中标题/CTA；
+   bg-airflow 全屏原公式不动。 */
+@media (min-width: 1025px) {
+  .qh-welcome .qh-bd-layer.qh-topology,
+  .qh-welcome .qh-visual-labels { transform: translate(7vw, -2vh); }
+  .qh-welcome .qh-core { transform: translate(calc(-50% + 7vw), calc(-50% - 2vh)); }
+}
+
+/* 窄屏：释放 header 空间，保证 theme/auth 44 且不裁 */
+@media (max-width: 480px) {
+  .qh-welcome .qh-brand-desc { display: none; }
+  .qh-welcome .qh-hdr-actions { gap: 6px; }
+  .qh-welcome .qh-hdr-actions .qh-hdr-auth { padding: 0 10px; font-size: 12.5px; }
+}
+
+/* M13 r04 → r40：缩略框对焦框规则随死 DOM 移除。 */
+/* 移动端：流程文本整体右移，避免与叙事脊柱线重合 */
+@media (max-width: 760px) {
+  .qh-welcome .proc-steps > li,
+  .qh-welcome .rail-item { padding-left: 22px; }
+}
+
+/* ── M25 r04 · Welcome 局部读区/前景配对（蓝白亮环境下四步清单/图标/次文可读） ──
+   仅局部低频读区承载（theme 底 mixed，非全页白卡、非烟雾 text-shadow）；主题/环境独立、保 B5 背景单实例。 */
+/* r40：flow-rail/flow-shot 读区规则随死 DOM 移除；proof-list/judge 读区保留于下。 */
+.qh-welcome .qh-proof-list,
+.qh-welcome .qh-judge {
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--w-bg) 76%, transparent);
+}
+.qh-welcome .qh-proof-list li { color: var(--w-text); }
+
+/* ── M25 r04 · 短高/移动粘性顶栏与锚点/浮钮安全槽（正文不被挡；44px 触达） ── */
+.qh-welcome section { scroll-margin-top: calc(var(--w-hdr, 64px) + 12px); }
+@media (max-width: 900px) {
+  .qh-welcome .qh-main { padding-bottom: 96px; }   /* 为底部固定浮钮留安全槽，正文不被挡 */
+  .qh-welcome .qh-cue { margin-bottom: 8px; }
+}
+
+/* ── M25 r05 ① · 真实产品路径 .proc-steps .rail-item 前景/读区就地配对 ──
+   根因：rail-item p / .rail-key / .pm-points li 用 --w-muted，在蓝白亮环境弱。
+   局部读区承载（theme 底 mixed），正文/清单前景随主题 light/dark 配对；保 r04 护照读区、B5 背景、字号、总路线。 */
+.qh-welcome .proc-steps .rail-item {
+  padding: 22px 18px 24px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--w-bg) 72%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--w-line) 50%, transparent);
+}
+.qh-welcome .proc-steps .rail-item p,
+.qh-welcome .proc-steps .rail-item h3 { color: var(--w-text); }
+.qh-welcome .proc-steps .rail-item .rail-key { color: color-mix(in srgb, var(--w-accent) 74%, var(--w-text)); }
+.qh-welcome .proc-steps .proc-media-inline .pmi-top,
+.qh-welcome .proc-steps .proc-media-inline .pm-points li { color: var(--w-text); }
+.qh-welcome .proc-steps .proc-media-inline .pm-tag { color: var(--w-text); }
+
+/* ── M28 r01 B · 设备系统体验（真实可操作代表） ── */
+.qh-welcome .qh-device-det { display: grid; gap: 12px; }
+.qh-welcome .qh-device-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.qh-welcome .qh-device-item {
+  display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  min-height: 44px; padding: 8px 14px; border: 1px solid var(--w-border, var(--border));
+  border-radius: 12px; background: transparent; color: var(--w-text, var(--text)); font: inherit; cursor: pointer;
+}
+.qh-welcome .qh-device-item.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); }
+.qh-welcome .qh-device-item.is-unknown.on { border-color: var(--warn, #b6862c); }
+.qh-welcome .qh-device-tag { font-size: 12px; color: var(--w-muted, var(--muted)); }
+.qh-welcome .qh-device-panel { display: grid; gap: 8px; }
+.qh-welcome .qh-device-status { margin: 0; }
+.qh-welcome .qh-device-boundary { margin: 0; color: var(--w-muted, var(--muted)); font-size: 13px; }
+.qh-welcome .qh-device-boundary.warn { color: var(--warn-text, #8a6414); font-weight: 600; }
+.qh-welcome .qh-device-switch { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+.qh-welcome .qh-device-detail { justify-self: start; }
+.qh-welcome .qh-device-note { margin: 0; font-size: 12px; color: var(--w-muted, var(--muted)); }
+
+/* ── M28 r01 B · 已封存成果（真实护照/空态） ── */
+.qh-welcome .qh-proof-rail { display: grid; gap: 10px; }
+.qh-welcome .qh-proof-rail h3 { margin: 0; font-size: 15px; }
+.qh-welcome .qh-proof-rail-steps { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--w-muted, var(--muted)); }
+.qh-welcome .qh-proof-rail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.qh-welcome .qh-proof-rail-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.qh-welcome .qh-proof-rail-item { border: 1px solid var(--w-border, var(--border)); border-radius: 12px; padding: 10px 12px; display: grid; gap: 4px; }
+.qh-welcome .qh-proof-rail-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.qh-welcome .qh-proof-rail-status { font-size: 12px; color: var(--w-muted, var(--muted)); }
+.qh-welcome .qh-proof-rail-meta { margin: 0; font-size: 12.5px; color: var(--w-muted, var(--muted)); }
+.qh-welcome .qh-proof-rail-link { font-size: 13px; }
+.qh-welcome .qh-proof-rail-note { margin: 0; font-size: 12px; color: var(--w-muted, var(--muted)); }
+
+/* ── M29 C→r41 · 圆形轨道舞台（用户要求：单设备位于圆形中央） ──
+   圆径三档：桌面 ≤208 / ≤480 视口 168 / ≤360 视口 140（390 与 320 代表检查见
+   r41 布局证据表）。居中=测量 reframe + 残差整组补偿 + preserveAspectRatio meet；
+   旧 64px 转子徽章与 r40 矩形舞台均为历史。 */
+.qh-welcome .qh-device-orbit-wrap { display: grid; justify-items: center; gap: 10px; width: 100%; }
+.qh-welcome .qh-device-orbit {
+  position: relative; display: grid; place-items: center; box-sizing: border-box;
+  width: clamp(140px, 24vw, 208px); aspect-ratio: 1; padding: 10px; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--brand) 45%, transparent);
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--brand) 10%, transparent), color-mix(in srgb, var(--brand) 3%, transparent) 72%);
+}
+.qh-welcome .qh-device-orbit-wrap.is-unknown .qh-device-orbit { border-color: var(--warn, #b6862c); }
+.qh-welcome .qh-device-orbit-wrap[data-demo-state="fault"] .qh-device-orbit { border-color: var(--bad-text, #b3261e); }
+.qh-welcome .qh-orbit-ctrl { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.qh-welcome .qh-orbit-mode {
+  min-height: 40px; padding: 4px 14px; border: 1px solid var(--w-border, var(--border));
+  border-radius: 999px; background: transparent; color: var(--w-text, var(--text)); font: inherit; font-size: 12.5px; cursor: pointer;
+}
+.qh-welcome .qh-orbit-mode.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); }
+.qh-welcome .qh-orbit-mode:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.qh-welcome .qh-reduce-note { font-size: 12px; color: var(--w-muted, var(--muted)); align-self: center; }
+.qh-welcome .qh-device-orbit-wrap .qh-device-pipe-node { margin-top: 0; }
+@media (max-width: 480px) { .qh-welcome .qh-device-orbit { width: clamp(120px, 44vw, 168px); } }
+@media (max-width: 360px) { .qh-welcome .qh-device-orbit { width: 140px; padding: 8px; } }
+
+.qh-welcome .qh-device-states { display: flex; flex-wrap: wrap; gap: 6px; }
+.qh-welcome .qh-device-state {
+  min-height: 40px; padding: 6px 12px; border: 1px solid var(--w-border, var(--border));
+  border-radius: 10px; background: transparent; color: var(--w-text, var(--text)); font: inherit; font-size: 13px; cursor: pointer;
+}
+.qh-welcome .qh-device-state.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); }
+.qh-welcome .qh-device-state:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* r41：qh-core/qh-pulse 随死掉的 .qh-shared-pb 区一并移除；qh-flow 仍被管路节点消费。 */
+@keyframes qh-flow { to { background-position: 24px 0; } }
+
+/* ── M29 r03→r40 · 设备图形（DeviceArtwork atlas 稳定机身 + 矢量机构前景） ──
+   旧 inline glyph 样式与 24/52px svg 钳制已随对应 DOM 移除；svg 尺寸统一由
+   product-geometry.css 提供（列表项 48×44 / 舞台 300×180 / 演示库 144px），
+   机构状态动效见 product-geometry.css 的 .qh-mech 系统。 */
+.qh-welcome .qh-device-item { flex-direction: row; align-items: center; gap: 10px; }
+.qh-welcome .qh-device-item-txt { display: inline-flex; flex-direction: column; }
+
+/* 示意管路节点 + 流向（running 时流动） */
+.qh-welcome .qh-device-pipe-node { display: block; width: 100%; max-width: 120px; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--w-border, var(--border)); opacity: .5; }
+.qh-welcome .qh-device-pipe-node.on { opacity: 1; }
+.qh-welcome .qh-device-pipe-node.flow { background-image: linear-gradient(90deg, color-mix(in srgb, var(--brand) 35%, transparent) 0 10px, transparent 10px 20px); background-size: 20px 100%; animation: qh-flow 1s linear infinite; }
+
+/* 操作区：勾选 + 次要资料入口（勿用实白凸面强影压过选中/风险） */
+.qh-welcome .qh-device-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.qh-welcome .qh-device-actions .disc-pop-trigger {
+  min-height: 40px; padding: 6px 12px; border: 1px solid var(--w-border, var(--border));
+  border-radius: 10px; background: transparent; color: var(--w-text, var(--text)); font: inherit; font-size: 13px; cursor: pointer; box-shadow: none;
+}
+.qh-welcome .qh-device-actions .disc-pop-trigger:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .qh-welcome .qh-device-pipe-node.flow { animation: none; }
+}
+
+/* M29 r03 · 4：设备读区局部实底，避免 field-engine 装饰文字/连线透出干扰正文（冻结背景本体，只给读区实底）。 */
+.qh-welcome .qh-flowval-stage {
+  background: color-mix(in srgb, var(--w-surface, var(--surface)) 92%, transparent);
+  border: 1px solid var(--w-border, var(--border));
+  border-radius: 16px;
+  padding: 14px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── r40 ④·4 读区实底扩展：日间 50% 玻璃下，气流/氛围装饰不得穿过正文 ──
+   复制 .qh-flowval-stage 读区模式给审计确认无衬的正文区；背景本体冻结，只加局部衬底。
+   穿字视觉严重度的最终判定归浏览器复核（本机不可验项，已在证据中登记）。 */
+.qh-welcome .qh-flowval-top,
+.qh-welcome .qh-proof-in > div {
+  background: color-mix(in srgb, var(--w-surface, var(--surface)) 92%, transparent);
+  border: 1px solid var(--w-border, var(--border));
+  border-radius: 16px;
+  padding: 14px;
+  position: relative;
+  z-index: 2;
+}
+.qh-welcome .qh-bounds-in,
+.qh-welcome .qh-cta-in {
+  background: color-mix(in srgb, var(--w-surface, var(--surface)) 92%, transparent);
+  border: 1px solid var(--w-border, var(--border));
+  border-radius: 16px;
+  padding: 14px var(--w-gutter, 14px);
+  position: relative;
+  z-index: 2;
+}
+.qh-welcome .qh-w1-capnote,
+.qh-welcome .qh-ftr-in {
+  background: color-mix(in srgb, var(--w-surface, var(--surface)) 88%, transparent);
+  border-radius: 10px;
+  position: relative;
+  z-index: 2;
+}
+/* r40 ④·2 同级卡片圆角统一 16px（qh-judge/qh-passport/pm-frame 原 --w-radius:14px，
+   与 flowval-stage/demo-machine/wheel-card 同族；控件小圆角不动）。 */
+.qh-welcome :is(.qh-judge, .qh-passport, .pm-frame) { border-radius: 16px; }
+
+/* ── M29 r05 · 序幕同源真实回放（复用宿主 ObservationClock/series） ── */
+.qh-welcome .qh-host-pb { display: grid; gap: 8px; margin-top: 4px; }
+.qh-welcome .qh-host-pb-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.qh-welcome .qh-host-pb-svg { width: 100%; height: auto; display: block; background: var(--w-raised, var(--raised)); border: 1px solid var(--w-border, var(--border)); border-radius: 12px; }
+.qh-welcome .hpb-line { stroke-width: 2; }
+.qh-welcome .hpb-line.demand { stroke: var(--brand); }
+.qh-welcome .hpb-line.supply { stroke: var(--accent, #3ea0ff); }
+.qh-welcome .hpb-cursor { fill: var(--bad-text, #b3261e); }
+.qh-welcome .qh-host-pb-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--w-muted, var(--muted)); }
+.qh-welcome .qh-host-pb-legend .lg { display: inline-block; width: 12px; height: 3px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+.qh-welcome .qh-host-pb-legend .lg.demand { background: var(--brand); }
+.qh-welcome .qh-host-pb-legend .lg.supply { background: var(--accent, #3ea0ff); }
+.qh-welcome .qh-host-pb-bars { display: flex; gap: 2px; align-items: flex-end; height: 40px; overflow-x: auto; }
+.qh-welcome .hpb-bar { flex: 1 1 0; min-width: 3px; height: 100%; display: flex; align-items: flex-end; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.qh-welcome .hpb-bar > span { width: 100%; background: color-mix(in srgb, var(--brand) 50%, transparent); border-radius: 2px 2px 0 0; }
+.qh-welcome .hpb-bar.gap > span { background: repeating-linear-gradient(45deg, var(--w-border, var(--border)) 0 3px, transparent 3px 6px); }
+.qh-welcome .hpb-bar.on > span { background: var(--brand); }
+.qh-welcome .hpb-bar:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.qh-welcome .qh-host-pb-readout { margin: 0; font-variant-numeric: tabular-nums; }
+.qh-welcome .qh-host-pb-ctrl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.qh-welcome .qh-host-pb-ctrl input[type="range"] { flex: 1 1 160px; min-width: 120px; }
+.qh-welcome .hpb-speed { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.qh-welcome .qh-device-real { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }

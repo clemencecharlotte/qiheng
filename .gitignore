@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-next/
+.env
+.env.*
+!.env.example
+var/
+__pycache__/
+*.pyc
+*.log

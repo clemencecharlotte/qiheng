@@ -1,0 +1,140 @@
+/* D09 r03 · CTA-PASSPORT-DESIGN v1 六层液态玻璃（规格逐项直译，参数可查可调）。
+   .u-glass=表面（面板/卡）；.u-cta-glass=次级按钮；.u-cta-primary=主 CTA 实底锚点。 */
+
+.u-glass,
+.u-cta-glass {
+  /* L3 边缘光（菲涅尔：顶受光/底背光） */
+  border: 1px solid var(--lg-edge, rgba(255, 255, 255, 0.2));
+  box-shadow:
+    inset 0 1px 0 var(--lg-top, rgba(255, 255, 255, 0.22)),
+    inset 0 -1px 0 var(--lg-bottom, rgba(0, 0, 0, 0.16)),
+    var(--lg-shadow, 0 4px 14px rgba(0, 0, 0, 0.22)); /* L6 near（同源 token） */
+  overflow: hidden; /* 高光/光晕裁切于圆角内 */
+  position: relative;
+  --gx: 50%;
+  --gy: 50%;
+}
+/* M21 · 材质收敛：不再硬编码 14px/46%，按角色消费 B5/宿主 token（单一来源）。
+   .u-glass=card 角色（--cg-fill-a）；.u-cta-glass=button 角色（--cg-btn-fill-a）。 */
+.u-glass {
+  -webkit-backdrop-filter: blur(var(--cg-blur, var(--qh-glass-blur, 14px))) saturate(var(--lg-sat, 150%));
+  backdrop-filter: blur(var(--cg-blur, var(--qh-glass-blur, 14px))) saturate(var(--lg-sat, 150%));
+  background: color-mix(in srgb, var(--pm-surface, var(--surface, #ffffff)) calc(max(var(--cg-fill-a, var(--qh-glass-fill, 0.46)), 0.46) * 100%), transparent);
+}
+.u-cta-glass {
+  -webkit-backdrop-filter: blur(var(--cg-btn-blur, var(--qh-glass-blur, 14px))) saturate(var(--lg-sat, 150%));
+  backdrop-filter: blur(var(--cg-btn-blur, var(--qh-glass-blur, 14px))) saturate(var(--lg-sat, 150%));
+  background: color-mix(in srgb, var(--pm-surface, var(--surface, #ffffff)) calc(max(var(--cg-btn-fill-a, var(--qh-glass-btn-fill, 0.46)), 0.46) * 100%), transparent);
+}
+/* L4 gloss 镜面带 */
+.u-glass::before,
+.u-cta-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(168deg, var(--lg-gloss, rgba(255, 255, 255, 0.26)) 0%, rgba(255, 255, 255, 0.03) 36%, transparent 62%);
+}
+/* L5 指针高光（全局连续光标；lit 由 pointerenter/leave 切换——位置从不重置）
+   D09 r05：.u-glow 通用化——任意按钮/滑条/模块容器加此类即获跟随高光 */
+.u-glass::after,
+.u-cta-glass::after,
+.u-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(110px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss, rgba(255, 255, 255, 0.26)), transparent 62%);
+  opacity: 0;
+  transition: opacity 200ms var(--pm-ease-ui, cubic-bezier(0.4, 0, 0.1, 1));
+}
+.u-glass--lit::after,
+.u-cta-glass--lit::after,
+.u-glow--lit::after,
+.u-glass:focus-within::after,
+.u-cta-glass:focus-visible::after,
+.u-glow:focus-within::after { opacity: 1; }
+.u-cta-glass:focus-visible { outline: 2px solid var(--brand, #176b62); outline-offset: 3px; }
+/* hover 抬升（边框 accent 45% + 阴影 far） */
+.u-cta-glass:hover {
+  border-color: color-mix(in srgb, var(--brand, #176b62) 45%, transparent);
+  box-shadow:
+    inset 0 1px 0 var(--lg-top, rgba(255, 255, 255, 0.22)),
+    inset 0 -1px 0 var(--lg-bottom, rgba(0, 0, 0, 0.16)),
+    var(--lg-shadow-far, 0 18px 44px rgba(0, 0, 0, 0.3));
+}
+/* 按压：玻璃微沉 */
+.u-cta-glass:active { transform: scale(0.98); transition: transform 180ms var(--pm-ease-ui, cubic-bezier(0.4, 0, 0.1, 1)); }
+
+/* 按钮几何（规格 §1） */
+.u-cta-glass {
+  min-height: 44px;
+  padding: 11px 18px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #eaf2f1; /* 深色主题文字 */
+  cursor: pointer;
+  overflow: hidden;
+}
+/* light 主题深字（B2 教训）：属性选择器恒定生效（跟随 data-theme，非 media 条件） */
+.u-cta-glass { color: #10222a; }
+[data-theme='dark'] .u-cta-glass { color: #eaf2f1; }
+.u-cta-lg { min-height: 46px; padding: 12px 22px; }
+
+/* 主 CTA：accent 实底锚点（恒定，不随六环境） */
+.u-cta-primary {
+  min-height: 44px;
+  padding: 11px 18px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #82d7bd; /* accent 实底（深色主题恒定） */
+  color: #10222a; /* on-accent 深墨 */
+  border: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+.u-cta-primary:hover { background: #6cc7aa; } /* 仅加深 */
+.u-cta-primary:active { transform: scale(0.98); transition: transform 180ms var(--pm-ease-ui, cubic-bezier(0.4, 0, 0.1, 1)); }
+.u-cta-primary:focus-visible { outline: 2px solid #10222a; outline-offset: 3px; }
+[data-theme='light'] .u-cta-primary { background: #0f7a63; color: #ffffff; }
+[data-theme='light'] .u-cta-primary:hover { background: #0c6653; }
+.u-cta-primary.u-cta-lg { min-height: 46px; padding: 12px 22px; }
+
+/* 面板/卡默认圆角与文字（卡内容仍走主题 token） */
+.u-glass { border-radius: 20px; color: var(--pm-text, var(--text, #1b3038)); }
+
+/* 触屏：无 hover——高光隐藏（按压=active 缩放+阴影等价反馈） */
+@media (hover: none) {
+  .u-glass::after,
+  .u-cta-glass::after,
+  .u-glow::after { display: none; }
+}
+/* reduced-motion：阻尼不启动（JS 侧直落）、过渡全停、形变取消 */
+@media (prefers-reduced-motion: reduce) {
+  .u-glass::after,
+  .u-cta-glass::after { transition: none; }
+  .u-cta-glass:active,
+  .u-cta-primary:active { transform: none; transition: none; }
+}
+/* 退化：无 backdrop-filter 内核 → L2 提至 94% 实底 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .u-glass,
+  .u-cta-glass {
+    background: color-mix(in srgb, var(--pm-surface, var(--surface, #ffffff)) 94%, transparent);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* .u-glow 通用要求：定位上下文+裁切（按钮/滑条/模块容器） */
+.u-glow { position: relative; overflow: hidden; }

@@ -1,0 +1,220 @@
+/* D08-W1 · R1 SceneShowcase 样式（作用域 .u-w1-scene）。
+   环境色由 scenePalette 插值后经 CSS 变量注入；展台自身渐变底与文字可读性
+   每环境自带 ink/inkMuted；几何跨态稳定；触达 44（tick 本体）。 */
+
+.u-w1-scene,
+.u-w1-scene *,
+.u-w1-scene *::before,
+.u-w1-scene *::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.u-w1-scene {
+  display: grid;
+  gap: var(--pm-space-3, 12px);
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--w1-ink, #f0f7f4);
+}
+
+/* r03 float 模式：展台画布透明——页面级 SceneBackdrop（天空+光斑）透出，
+   主体 SVG 与文字直接浮于动态背景上；文字色 = 环境 ink（对三停对比 ≥4.5 已测） */
+.u-w1-scene__canvas {
+  position: relative;
+  border-radius: 20px;
+  background: transparent;
+  overflow: hidden;
+  min-height: 280px;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  padding: var(--pm-space-4, 16px);
+}
+
+.u-w1-scene__svg {
+  width: min(560px, 100%);
+  height: auto;
+  transform: translate(var(--w1-dx, 0px), var(--w1-dy, 0px));
+  will-change: transform;
+}
+/* r06：颜色全部走 CSS var（chase 每帧直写容器变量，React 零重渲；重绘面积仅本展台） */
+.u-w1-scene .u-w1-scene__hi-stop { stop-color: var(--w1-core-hi, #a8e6d5); }
+.u-w1-scene .u-w1-scene__lo-stop { stop-color: var(--w1-core-lo, #3f6f66); }
+.u-w1-scene .u-w1-scene__glow-stop { stop-color: var(--w1-glow-c, #5fae9e); opacity: var(--w1-glow-k, 0.8); }
+.u-w1-scene .u-w1-scene__hi-stroke { stroke: var(--w1-core-hi, #a8e6d5); }
+.u-w1-scene .u-w1-scene__lo-stroke { stroke: var(--w1-core-lo, #3f6f66); }
+.u-w1-scene .u-w1-scene__hi-fill { fill: var(--w1-core-hi, #a8e6d5); }
+.u-w1-scene .u-w1-scene__flow { fill: var(--w1-flow, #8fe0c8); }
+/* token 映射（与 D06 r04 ProductMaterial 同源同值；组件作用域） */
+.u-w1-scene {
+  --pm-canvas: var(--canvas, #f1f4f5);
+  --pm-surface: var(--surface, #ffffff);
+  --pm-raised: var(--raised, #f4f7f7);
+  --pm-text: var(--text, #1b3038);
+  --pm-muted: var(--muted, #576c74);
+  --pm-border: var(--border, #dbe3e6);
+  --pm-brand: var(--brand, #176b62);
+  --pm-brand-on: var(--primary-text, #ffffff);
+  --pm-radius: 16px;
+  --pm-fs-title: 16px;
+  --pm-fs-body: 14px;
+  --pm-fs-note: 12px;
+  --pm-space-1: 4px;
+  --pm-space-2: 8px;
+  --pm-space-3: 12px;
+  --pm-space-4: 16px;
+  --pm-dur-hover: 160ms;
+  --pm-ease-ui: cubic-bezier(0.4, 0, 0.1, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .u-w1-scene__svg { transform: none; transition: none; }
+}
+
+/* 弧线缓转（reduce 下禁用；离屏由 visibility/IO 资格在 JS 侧停 chase，CSS 动画持续但不可见成本极低） */
+@keyframes u-w1-arc-spin {
+  to { transform: rotate(360deg); }
+}
+.u-w1-scene__arc {
+  transform-origin: 210px 146px;
+  animation: u-w1-arc-spin linear infinite;
+}
+
+/* 流点：沿内弧的三条简单正弦轨迹（轻量、少量） */
+@keyframes u-w1-flow-a {
+  0% { transform: translate(96px, 60px); }
+  50% { transform: translate(210px, 20px); }
+  100% { transform: translate(324px, 60px); }
+}
+@keyframes u-w1-flow-b {
+  0% { transform: translate(300px, 226px); }
+  50% { transform: translate(150px, 244px); }
+  100% { transform: translate(78px, 178px); }
+}
+@keyframes u-w1-flow-c {
+  0% { transform: translate(236px, 52px); }
+  50% { transform: translate(288px, 120px); }
+  100% { transform: translate(236px, 196px); }
+}
+.u-w1-scene__flow--a { animation: u-w1-flow-a 9s ease-in-out infinite; }
+.u-w1-scene__flow--b { animation: u-w1-flow-b 11s ease-in-out infinite; }
+.u-w1-scene__flow--c { animation: u-w1-flow-c 13s ease-in-out infinite; }
+/* 全体漂移（跟随 scenePosition 的极小相位，非滚动驱动） */
+@keyframes u-w1-drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.u-w1-scene__drift { animation: u-w1-drift 12s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .u-w1-scene__arc,
+  .u-w1-scene__flow--a,
+  .u-w1-scene__flow--b,
+  .u-w1-scene__flow--c,
+  .u-w1-scene__drift { animation: none; }
+}
+
+/* 展台文字/CTA（每环境 ink 保持可读；正文实底托底避免花底干扰） */
+.u-w1-scene__copy {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(680px, calc(100% - 32px));
+  text-align: center;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  /* 局部柔和暗晕衬底（Stripe 同款：文字坐稳，地平线亮区不蚀字） */
+}
+.u-w1-scene__copy::before {
+  content: "";
+  position: absolute;
+  inset: -34px -56px;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(
+    60% 90% at 50% 50%,
+    color-mix(in srgb, #0a1420 62%, transparent) 0%,
+    color-mix(in srgb, #0a1420 34%, transparent) 62%,
+    transparent 100%
+  );
+  filter: blur(6px);
+}
+.u-w1-scene__title {
+  margin: 0;
+  font-size: clamp(18px, 2.4vw, 26px);
+  line-height: 1.3;
+  color: var(--w1-ink, #f0f7f4);
+  text-shadow: 0 1px 2px rgba(6,12,24,0.55), 0 2px 14px rgba(6,12,24,0.38), 0 0 28px rgba(6,12,24,0.28);
+}
+.u-w1-scene__subtitle {
+  margin: 0;
+  font-size: var(--pm-fs-body, 14px);
+  color: var(--w1-ink-muted, #b0c8c0);
+  text-shadow: 0 1px 2px rgba(6,12,24,0.5), 0 1px 10px rgba(6,12,24,0.34);
+}
+.u-w1-scene__actions { display: flex; gap: var(--pm-space-2, 8px); flex-wrap: wrap; justify-content: center; }
+/* D09 r03：CTA 交由 CTA-PASSPORT 基准类（u-cta-primary 恒定锚点 / u-cta-glass 次级玻璃）；
+   本处仅保留展台内适配 */
+.u-w1-scene__cta { min-height: 44px; }
+.u-w1-scene__cta--ghost { background: color-mix(in srgb, #0a1420 32%, transparent); }
+.u-w1-scene__cta.u-cta-primary { background: #82d7bd; color: #10222a; }
+[data-theme='light'] .u-w1-scene__cta.u-cta-primary { background: #0f7a63; color: #ffffff; }
+
+/* 控制区：连续 slider + 六刻度（本体 44） */
+/* r03：控制区无卡片（ChatGPT 式裸 slider 直接压背景） */
+.u-w1-scene__controls {
+  display: grid;
+  gap: var(--pm-space-2, 8px);
+}
+.u-w1-scene__slider-label { display: flex; align-items: center; gap: var(--pm-space-3, 12px); }
+.u-w1-scene__env-name {
+  font-size: var(--pm-fs-title, 16px);
+  font-weight: 600;
+  min-width: 3em;
+  color: var(--w1-ink, #f0f7f4);
+}
+.u-w1-scene__slider { flex: 1; min-height: 44px; accent-color: var(--w1-glow, #5fae9e); cursor: pointer; }
+
+.u-w1-scene__ticks { display: flex; gap: var(--pm-space-1, 4px); flex-wrap: wrap; }
+.u-w1-scene__tick {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--w1-ink-muted, #b0c8c0);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.u-w1-scene__tick-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.u-w1-scene__tick--on {
+  border-color: color-mix(in srgb, var(--w1-glow, #5fae9e) 60%, transparent);
+  background: color-mix(in srgb, var(--w1-glow, #5fae9e) 22%, transparent);
+  color: var(--w1-ink, #f0f7f4);
+}
+.u-w1-scene__tick:focus-visible { outline: 2px solid var(--w1-ink, #f0f7f4); outline-offset: 2px; }
+
+.u-w1-scene__footnote {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--pm-muted, #576c74);
+}
+
+@media (max-width: 640px) {
+  .u-w1-scene__canvas { min-height: 240px; }
+  .u-w1-scene__copy { position: static; transform: none; width: 100%; margin-top: 8px; }
+  .u-w1-scene__ticks { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+}
+
+.u-w1-scene__env-live {
+  font-size: 13px;
+  color: var(--w1-ink, #e9effc);
+  text-align: center;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.25);
+}

@@ -1,0 +1,132 @@
+/* ═════════════════════════════════════════════════════════════════════
+   M29 B · 宿主同级材质角色收敛（补 layer，不是第三层玻璃）
+   复用既有角色 token：--cg-card-fill、--cg-data-fill、--cg-overlay-fill、--cg-btn-fill
+   与玻璃主轴 --qh-glass-fill。此处只把**尚未走角色 token 的消费者**（序幕卡片/标签/
+   输入/图表）并入同一体系：
+     · 装饰读区（序幕展台/能力卡/浮层）= 克制玻璃（沿用主轴 fill/blur）
+     · 数据密集读区（面板/表格/图表/输入）= 更实，禁各自硬 blur
+   不加 !important、不新增整站风格、不改默认玻璃 g=0.5 与合法已存个人值。
+   ═════════════════════════════════════════════════════════════════════ */
+
+:where(.appearance-host, .qh-welcome) {
+  /* 同级圆角/描边节奏：与 --ui-radius-* / --pm-radius 同源兜底 */
+  --mr-radius-card: var(--ui-radius-lg, var(--pm-radius, 16px));
+  --mr-radius-ctl: var(--ui-radius-sm, 10px);
+  --mr-border: var(--border, #dbe3e6);
+}
+
+/* 装饰读区：序幕展台/能力卡走卡片玻璃角色（沿用主轴，不另造 blur/高光） */
+:where(.qh-welcome .u-glass, .qh-welcome .u-w1-scene, .qh-welcome .u-w1-cap__card) {
+  border-radius: var(--mr-radius-card);
+  border: 1px solid var(--mr-border);
+}
+
+/* 数据密集读区更实：面板正文/表格/图表容器不各自硬 blur（统一由数据角色决定） */
+:where(.app-shell .panel, .app-shell .table-wrap, .trend-svg) {
+  border-radius: var(--mr-radius-card);
+}
+
+/* 标签：统一描边/圆角（同级不再各自硬阴影） */
+:where(.tag, .topbar-status-chip) {
+  border-radius: var(--mr-radius-ctl);
+  border: 1px solid var(--mr-border);
+  box-shadow: none;
+}
+
+/* 输入控件：统一描边/圆角/焦点环（实底数据面，日间可读优先） */
+:where(.app-shell, .qh-welcome) :where(input:not([type='range']):not([type='checkbox']):not([type='radio']), select, textarea) {
+  border-radius: var(--mr-radius-ctl);
+  border: 1px solid var(--mr-border);
+  background: var(--surface, #fff);
+}
+:where(.app-shell, .qh-welcome) :where(input, select, textarea):focus-visible {
+  outline: 2px solid var(--focus, var(--brand));
+  outline-offset: 1px;
+}
+
+/* 浮层角色：统一圆角（blur/fill 由既有 overlay 角色 token 决定，不在此重设） */
+:where(.disc-pop, .disc-tip, .appearance-scene-pop, .u-dialog, .topbar-modal) {
+  border-radius: var(--mr-radius-card);
+}
+
+/* Final consumer layer: one existing continuous glass axis, three roles.
+   No positioning or motion eligibility is changed by an optical material. */
+:root {
+  --material-read-fill: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-data-fill-a, .94), .9) * 100%), transparent);
+  --material-read-filter: blur(min(var(--cg-data-blur, 0px), 4px)) saturate(120%);
+  --material-read-border: color-mix(in srgb, var(--brand, #176b62) calc(min(.28, var(--cg-edge, .05)) * 100%), var(--border, #dbe3e6));
+  --material-read-shadow: inset 0 1px 0 rgb(255 255 255 / var(--cg-gloss, 0)), 0 2px 10px rgb(0 0 0 / calc(min(2, var(--cg-shadow, 0)) * .04));
+  --material-control-fill: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-btn-fill-a, .9), .86) * 100%), transparent);
+  --material-control-filter: blur(min(var(--cg-btn-blur, 0px), 6px)) saturate(130%);
+  --material-control-shadow: inset 0 1px 0 rgb(255 255 255 / var(--cg-gloss, 0)), 0 2px 6px rgb(0 0 0 / calc(min(2, var(--cg-shadow, 0)) * .035));
+  --material-decor-fill: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-fill-a, .8), .68) * 100%), transparent);
+  --material-decor-filter: blur(var(--cg-blur, 0px)) saturate(140%);
+}
+/* Three-class consumers beat old panel rules without !important. */
+.appearance-host :is(.app-shell .panel, .app-shell .context-rail,
+  .app-shell .qh-relations, .app-shell .table-wrap, .app-shell .agent-resource,
+  .qh-welcome .qh-flowval-stage, .qh-welcome .qh-demo-machine, .qh-welcome .qh-wheel-card) {
+  color: var(--text);
+  background: var(--material-read-fill);
+  border-color: var(--material-read-border);
+  border-radius: var(--mr-radius-card);
+  -webkit-backdrop-filter: var(--material-read-filter);
+  backdrop-filter: var(--material-read-filter);
+  box-shadow: var(--material-read-shadow);
+}
+.appearance-host :is(.app-shell .panel, .app-shell .context-rail)::before,
+.appearance-host :is(.app-shell .panel, .app-shell .context-rail)::after { background: none; }
+.appearance-host :is(.qh-welcome .u-w1-scene, .qh-welcome .u-w1-cap__card, .qh-welcome .u-glass) {
+  background: var(--material-decor-fill);
+  border-color: var(--material-read-border);
+  border-radius: var(--mr-radius-card);
+  -webkit-backdrop-filter: var(--material-decor-filter);
+  backdrop-filter: var(--material-decor-filter);
+}
+.appearance-host :is(input:not([type=range]):not([type=checkbox]):not([type=radio]), select, textarea) {
+  box-sizing: border-box; min-width: 0; max-width: 100%; min-height: 44px;
+  padding: 8px 10px; border: 1px solid var(--material-read-border);
+  border-radius: var(--mr-radius-ctl); background: var(--material-control-fill);
+  color: var(--text); font: inherit;
+  -webkit-backdrop-filter: var(--material-control-filter); backdrop-filter: var(--material-control-filter);
+}
+.appearance-host :is(.app-shell .link-btn, .app-shell .agent-workspace .btn,
+  .qh-welcome .qh-machine-actions button, .qh-welcome .qh-wheel-action) {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; min-width: 44px; min-height: 44px; max-width: 100%; padding: 8px 12px;
+  border: 1px solid var(--material-read-border); border-radius: var(--mr-radius-ctl);
+  background: var(--material-control-fill); color: var(--text); font: inherit;
+  text-align: start; overflow-wrap: anywhere; cursor: pointer;
+  box-shadow: var(--material-control-shadow);
+  -webkit-backdrop-filter: var(--material-control-filter); backdrop-filter: var(--material-control-filter);
+}
+.appearance-host :is(.app-shell .link-btn, .qh-demo-fleet button):hover { border-color: var(--brand); }
+.appearance-host :is(input, select, textarea, .link-btn, .qh-demo-fleet button):focus-visible { outline: 2px solid var(--focus, var(--brand)); outline-offset: 3px; }
+.appearance-host :is(.app-shell .link-btn, .app-shell .agent-workspace .btn):disabled { cursor: not-allowed; color: var(--muted); box-shadow: none; }
+/* Portal surfaces consume root tokens, independent of the host ancestor. */
+html :is(.disc-pop, .disc-tip, .appearance-scene-pop, .u-dialog, .topbar-modal) {
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-overlay-fill-a, .96), .94) * 100%), transparent);
+  border-color: var(--material-read-border); border-radius: var(--mr-radius-card);
+  -webkit-backdrop-filter: blur(min(var(--cg-overlay-blur, 0px), 12px)) saturate(130%);
+  backdrop-filter: blur(min(var(--cg-overlay-blur, 0px), 12px)) saturate(130%);
+}
+.appearance-host .agent-workspace .toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.appearance-host .agent-workspace .field { display: grid; gap: 4px; min-width: 0; max-width: 100%; }
+.appearance-host .agent-workspace .field input { width: 140px; }
+.appearance-host .agent-workspace .plain-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+.appearance-host .agent-workspace :is(.agent-tool-result, .agent-resource) { min-width: 0; overflow-wrap: anywhere; }
+.appearance-host .agent-workspace .agent-tool-data { margin: 10px 0; }
+.appearance-host .agent-workspace .agent-tool-data > div { display: grid; grid-template-columns: minmax(80px, 1fr) minmax(0, 4fr); gap: 10px; padding-block: 4px; }
+.appearance-host .agent-workspace .agent-tool-data dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+html[data-glass='0'] { --material-read-fill: var(--surface); --material-control-fill: var(--surface); --material-decor-fill: var(--surface); --material-read-filter: none; --material-control-filter: none; --material-decor-filter: none; }
+html[data-glass='0'] :is(.disc-pop, .disc-tip, .appearance-scene-pop, .u-dialog, .topbar-modal) { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --material-read-fill: var(--surface); --material-control-fill: var(--surface); --material-decor-fill: var(--surface); }
+}
+@media (max-width: 640px) {
+  .appearance-host :is(input:not([type=range]), select, textarea) { font-size: 16px; }
+  .appearance-host .agent-workspace .toolbar > .field { flex: 1 1 120px; }
+  .appearance-host .agent-workspace .toolbar > .field :is(input, select) { width: 100%; }
+  .appearance-host .agent-workspace .agent-tool-data > div { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+}

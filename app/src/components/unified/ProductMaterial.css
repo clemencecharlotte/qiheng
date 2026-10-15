@@ -1,0 +1,171 @@
+/* ═════════════════════════════════════════════════════════════════════
+   ProductMaterial · 欢迎页/控制台统一材质 tokens（D06）
+   对接 baseline/app/src/styles.css :root 1–80（--canvas/--surface/--raised/
+   --text/--muted/--border/--brand/--accent-dim/--shadow-soft）与欢迎页语义色
+   （--w-accent 同源 = --brand 系）。仅组件作用域声明；不新增整站风格。
+   材质强弱（同一字阶/间距）：
+     导航/浮层   = 半透明工具层（blur+edge 高光，克制玻璃）
+     数据密集区  = 不透明高覆盖底色，清晰可读（禁 blur）
+     按钮        = 实底 accent（对比锚点），次级为描边
+     弹层 scrim  = 深色压暗 + 适度 blur
+   fallback：无 backdrop-filter → 高不透明实底，标题/正文不穿字。
+   ═════════════════════════════════════════════════════════════════════ */
+
+.u-pm,
+.u-dialog,
+.u-origin-trigger,
+.u-auth {
+  /* 对接 baseline tokens（浅/暗主题随 :root/[data-theme] 自动跟随） */
+  --pm-canvas: var(--canvas, #f1f4f5);
+  --pm-surface: var(--surface, #ffffff);
+  --pm-raised: var(--raised, #f4f7f7);
+  --pm-text: var(--text, #1b3038);
+  --pm-muted: var(--muted, #576c74);
+  --pm-border: var(--border, #dbe3e6);
+  --pm-brand: var(--brand, #176b62);
+  /* 品牌底上的文字色（D06-r04 修复暗主题白字 on 浅品牌 1.62:1）：
+     baseline --primary-text 本身就是品牌底的配文色——亮主题 #ffffff（on #176b62 ≈ 6.3:1），
+     暗主题 #16372e（on #88dbbf ≈ 8.0:1）；无 baseline 时回退白字（默认亮品牌深色）。 */
+  --pm-brand-on: var(--primary-text, #ffffff);
+  --pm-accent-dim: var(--accent-dim, color-mix(in srgb, var(--brand) 72%, var(--canvas)));
+  --pm-shadow-soft: var(--shadow-soft, 0 1px 2px rgba(16, 42, 48, 0.05));
+
+  /* 字阶/间距：同一 4/8 节奏 + 欢迎页字阶 */
+  --pm-space-1: 4px;
+  --pm-space-2: 8px;
+  --pm-space-3: 12px;
+  --pm-space-4: 16px;
+  --pm-space-6: 24px;
+  --pm-radius: 16px;
+  --pm-fs-title: 16px;
+  --pm-fs-body: 14px;
+  --pm-fs-note: 12px;
+  --pm-lh: 1.6;
+
+  /* 材质：工具层/浮层 = 克制玻璃；数据区 = 实底 */
+  --pm-glass-fill: color-mix(in srgb, var(--pm-surface) 82%, transparent);
+  --pm-glass-strong: color-mix(in srgb, var(--pm-surface) 94%, transparent);
+  --pm-glass-edge: color-mix(in srgb, #ffffff 42%, var(--pm-border));
+  --pm-gloss: linear-gradient(168deg,
+    color-mix(in srgb, #ffffff 12%, transparent) 0%,
+    color-mix(in srgb, #ffffff 3%, transparent) 36%,
+    transparent 58%);
+  --pm-blur: 12px;
+  --pm-sat: 130%;
+  --pm-top-light: inset 0 1px 0 color-mix(in srgb, #ffffff 26%, transparent);
+  --pm-bottom-shade: inset 0 -1px 0 color-mix(in srgb, #000000 12%, transparent);
+  --pm-shadow-far: 0 18px 48px rgba(16, 42, 48, 0.24), 0 2px 10px rgba(16, 42, 48, 0.12);
+
+  /* 动效 token：与壳层同一 160/240/320 + 双曲线 */
+  --pm-dur-hover: 160ms;
+  --pm-dur-expand: 240ms;
+  --pm-dur-page: 320ms;
+  --pm-ease-ui: cubic-bezier(0.4, 0, 0.1, 1);
+  --pm-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 工具层/浮层玻璃（导航条/弹层面板） */
+.u-pm-glass {
+  background: var(--pm-glass-fill);
+  border: 1px solid var(--pm-glass-edge);
+  box-shadow: var(--pm-top-light), var(--pm-bottom-shade), var(--pm-shadow-far);
+  -webkit-backdrop-filter: blur(var(--pm-blur)) saturate(var(--pm-sat));
+  backdrop-filter: blur(var(--pm-blur)) saturate(var(--pm-sat));
+}
+.u-pm-gloss::before {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: var(--pm-gloss);
+}
+
+/* fallback：无 backdrop-filter → 高不透明实底，不穿字 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .u-pm-glass {
+    background: var(--pm-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* 数据密集区：不透明高覆盖底色（禁 blur） */
+.u-pm-data {
+  background: var(--pm-surface);
+  border: 1px solid var(--pm-border);
+  border-radius: var(--pm-radius);
+  color: var(--pm-text);
+}
+
+/* 按钮层级：主=实底 accent；次=描边 */
+.u-pm-btn-primary {
+  background: var(--pm-brand);
+  color: var(--pm-brand-on);
+  border: 1px solid var(--pm-brand);
+}
+.u-pm-btn-secondary {
+  background: transparent;
+  color: var(--pm-text);
+  border: 1px solid var(--pm-border);
+}
+
+/* ── AuthPreview 表单（统一登录/注册入口；作用域 .u-auth）── */
+.u-auth { display: grid; gap: var(--pm-space-3); }
+.u-auth__tabs {
+  display: flex; gap: 4px; padding: 3px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--pm-canvas) 70%, transparent);
+}
+.u-auth__tabs button {
+  flex: 1; min-height: 36px;
+  border: 0; border-radius: 7px; background: transparent;
+  color: var(--pm-muted); font-size: 13px; cursor: pointer;
+  transition: color var(--pm-dur-hover) var(--pm-ease-ui), background-color var(--pm-dur-hover) var(--pm-ease-ui);
+}
+.u-auth__tabs button.on { background: var(--pm-brand); color: var(--pm-brand-on); font-weight: 600; }
+.u-auth__field { display: grid; gap: 5px; }
+.u-auth__field span { font-size: 12px; color: var(--pm-muted); }
+.u-auth__field input {
+  width: 100%; font-size: 16px; padding: 10px 12px;
+  border: 1px solid var(--pm-border); border-radius: 10px;
+  background: var(--pm-canvas); color: var(--pm-text);
+  transition: border-color var(--pm-dur-hover) var(--pm-ease-ui), box-shadow var(--pm-dur-hover) var(--pm-ease-ui);
+}
+.u-auth__field input:focus {
+  outline: none; border-color: var(--pm-brand);
+  box-shadow: 0 0 0 3px var(--pm-accent-dim);
+}
+.u-auth__submit { min-height: 44px; }
+.u-auth__note {
+  margin: 2px 0 0;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px; letter-spacing: 0.06em;
+  color: var(--pm-muted);
+  border-left: 2px solid var(--pm-accent-dim);
+  padding-left: 8px;
+  transition: color var(--pm-dur-hover) var(--pm-ease-ui), border-color var(--pm-dur-hover) var(--pm-ease-ui);
+}
+.u-auth__note[data-flash='1'] { color: var(--pm-brand); border-left-color: var(--pm-brand); }
+
+/* ── Auth 提交钮：统一主行动（修复白色原生小按钮）── */
+.u-auth__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--pm-space-4);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--pm-brand);
+  color: var(--pm-brand-on);
+  border: 1px solid var(--pm-brand);
+  cursor: pointer;
+  transition: background-color var(--pm-dur-hover) var(--pm-ease-ui),
+              border-color var(--pm-dur-hover) var(--pm-ease-ui),
+              transform var(--pm-dur-hover) var(--pm-ease-ui);
+}
+.u-auth__submit:hover { background: color-mix(in srgb, var(--pm-brand) 88%, #000); border-color: color-mix(in srgb, var(--pm-brand) 88%, #000); }
+.u-auth__submit:active { transform: scale(0.985); }
+.u-auth__submit:focus-visible { outline: 2px solid var(--pm-brand); outline-offset: 2px; }

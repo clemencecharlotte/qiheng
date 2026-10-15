@@ -1,0 +1,154 @@
+/* 气衡 M06 · 只读数据接入面板。严格作用域 .qh-data-ingress，沿既有 tokens。
+   只读展示；不含全局/导航/欢迎样式。 */
+
+.qh-data-ingress {
+  margin: 0 0 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 12px);
+  background: var(--surface);
+  color: var(--text);
+  /* 窄屏（≤320）：面板不得成为内容容器的横向溢出源。 */
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* 窄屏内容完整可读：长 token / 时间串换行而非撑破，不 use overflow:hidden 截字。 */
+.qh-data-ingress .qdi-hd,
+.qh-data-ingress .qdi-actions,
+.qh-data-ingress .qdi-counts { min-width: 0; }
+.qh-data-ingress .qdi-hd > * { min-width: 0; }
+.qh-data-ingress .qdi-actions { flex-wrap: wrap; }
+.qh-data-ingress .qdi-file { max-width: 100%; flex-wrap: wrap; min-width: 0; }
+.qh-data-ingress .qdi-file input { max-width: 100%; min-width: 0; }
+.qh-data-ingress .qdi-counts { flex-wrap: wrap; }
+.qh-data-ingress .qdi-batch,
+.qh-data-ingress .qdi-batch-src,
+.qh-data-ingress .qdi-batch-meta,
+.qh-data-ingress .qdi-batch-time,
+.qh-data-ingress .qdi-src-label,
+.qh-data-ingress .qdi-importmsg,
+.qh-data-ingress .qdi-note { overflow-wrap: anywhere; word-break: break-word; min-width: 0; }
+.qh-data-ingress .qdi-error { overflow-wrap: anywhere; }
+.qh-data-ingress .qdi-obs { display: block; overflow-x: auto; max-width: 100%; }
+.qh-data-ingress .qdi-obs th,
+.qh-data-ingress .qdi-obs td { overflow-wrap: anywhere; word-break: break-word; }
+
+.qh-data-ingress .qdi-hd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.qh-data-ingress .qdi-eyebrow {
+  margin: 0 0 2px;
+  font-family: var(--mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.qh-data-ingress h3 { margin: 0; font-size: 16px; }
+.qh-data-ingress h4 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
+
+.qh-data-ingress .qdi-status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  /* 302/320 窄屏：状态声明完整可读，允许换行，不 nowrap 撑破内容容器。 */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+  max-width: 100%;
+}
+.qh-data-ingress .qdi-status-live { color: var(--success); border-color: var(--success); }
+.qh-data-ingress .qdi-status-stale { color: var(--warning); border-color: var(--warning); }
+.qh-data-ingress .qdi-status-error { color: var(--danger); border-color: var(--danger); }
+.qh-data-ingress .qdi-status-offline { color: var(--muted); }
+
+.qh-data-ingress .qdi-empty,
+.qh-data-ingress .qdi-muted { margin: 8px 0; font-size: 13px; color: var(--muted); }
+.qh-data-ingress code { font-family: var(--mono, ui-monospace, monospace); font-size: 12px; }
+
+.qh-data-ingress .qdi-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.qh-data-ingress .qdi-file {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; min-height: 40px;
+  border: 1px dashed var(--border); border-radius: 8px; cursor: pointer; font-size: 13px;
+}
+.qh-data-ingress .qdi-file input { max-width: 220px; font-size: 12px; }
+.qh-data-ingress .qdi-retry {
+  min-height: 40px; padding: 8px 14px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--raised, var(--surface)); color: var(--text); cursor: pointer;
+}
+.qh-data-ingress .qdi-retry:disabled { opacity: .6; cursor: default; }
+.qh-data-ingress .qdi-link {
+  min-height: 40px; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent; color: var(--brand); cursor: pointer; font-size: 13px;
+}
+.qh-data-ingress .qdi-link:hover { border-color: var(--brand); }
+.qh-data-ingress .qdi-error { color: var(--danger); font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.qh-data-ingress .qdi-error button {
+  min-height: 32px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: transparent; color: var(--text); cursor: pointer; font-size: 12px;
+}
+.qh-data-ingress .qdi-importmsg { color: var(--success); font-size: 13px; }
+
+.qh-data-ingress .qdi-grid { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(240px, 1.4fr); gap: 16px; margin: 12px 0; }
+.qh-data-ingress .qdi-batchlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.qh-data-ingress .qdi-batch {
+  width: 100%; text-align: left; display: grid; gap: 2px;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: transparent; color: var(--text); cursor: pointer;
+}
+.qh-data-ingress .qdi-batch.active { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 6%, transparent); }
+.qh-data-ingress .qdi-batch-src { font-size: 13px; font-weight: 600; }
+.qh-data-ingress .qdi-batch-meta { font-size: 11.5px; color: var(--muted); }
+.qh-data-ingress .qdi-batch-time { font-size: 11px; color: var(--muted); font-family: var(--mono, monospace); }
+
+.qh-data-ingress .qdi-counts { list-style: none; margin: 0 0 8px; padding: 0; display: flex; gap: 14px; }
+.qh-data-ingress .qdi-counts li { display: grid; }
+.qh-data-ingress .qdi-counts b { font-size: 18px; }
+.qh-data-ingress .qdi-counts span { font-size: 11px; color: var(--muted); }
+
+.qh-data-ingress .qdi-reasons summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
+.qh-data-ingress .qdi-reasons ul { margin: 6px 0 0; padding-left: 18px; font-size: 12px; }
+.qh-data-ingress .qdi-reasons code { display: block; color: var(--muted); word-break: break-all; }
+
+.qh-data-ingress .qdi-obs { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+.qh-data-ingress .qdi-obs th, .qh-data-ingress .qdi-obs td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--border); }
+.qh-data-ingress .qdi-obs th { color: var(--muted); font-weight: 600; }
+
+.qh-data-ingress .qdi-times { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 0 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+.qh-data-ingress .qdi-times dt { font-size: 11px; color: var(--muted); }
+.qh-data-ingress .qdi-times dd { margin: 2px 0 0; font-size: 12px; font-family: var(--mono, monospace); word-break: break-all; }
+
+.qh-data-ingress .qdi-note { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.qh-data-ingress .qdi-note strong { color: var(--text); }
+
+@media (max-width: 900px) {
+  .qh-data-ingress .qdi-grid { grid-template-columns: minmax(0, 1fr); }
+  .qh-data-ingress .qdi-times { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* M06b：回放证据页顶部的局部“批次导入”定位按钮（新类，无全局泄漏） */
+.qh-history-jump {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  margin: 6px 0 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--border, #34464e);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text, inherit);
+  cursor: pointer;
+  font-size: 13px;
+}
+.qh-history-jump:hover { border-color: var(--brand, #88dbbf); color: var(--brand, #88dbbf); }

@@ -1,0 +1,101 @@
+/* M12 · R6 关联证据（严格作用域 .qh-relations） */
+
+.qh-relations {
+  margin: 0 0 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--border, #dbe3e6);
+  border-radius: 12px;
+  background: var(--surface, #fff);
+  color: var(--text, #1b3038);
+  min-width: 0;
+}
+.qh-relations .qrel-hd { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.qh-relations .qrel-hd h3 { margin: 0; font-size: 15px; }
+.qh-relations .qrel-count { font-size: 12px; color: var(--muted, #576c74); }
+
+.qh-relations .qrel-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.qh-relations .qrel-chip {
+  min-height: 34px; padding: 4px 12px; border: 1px solid var(--border, #dbe3e6); border-radius: 999px;
+  background: transparent; color: var(--text, #1b3038); font-size: 12.5px; cursor: pointer;
+}
+.qh-relations .qrel-chip.on { border-color: var(--brand, #176b62); color: var(--brand, #176b62); background: color-mix(in srgb, var(--brand, #176b62) 10%, transparent); }
+
+.qh-relations .qrel-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.qh-relations .qrel-nodes { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.qh-relations .qrel-node {
+  width: 100%; text-align: left; display: grid; grid-template-columns: auto auto 1fr auto; gap: 8px;
+  align-items: center; padding: 8px 10px; border: 1px solid var(--border, #dbe3e6); border-radius: 8px;
+  background: transparent; color: var(--text, #1b3038); cursor: pointer; min-width: 0;
+}
+.qh-relations .qrel-node.on { border-color: var(--brand, #176b62); background: color-mix(in srgb, var(--brand, #176b62) 7%, transparent); }
+.qh-relations .qrel-kind { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border, #dbe3e6); white-space: nowrap; }
+.qh-relations .qrel-kind-source { color: var(--brand, #176b62); }
+.qh-relations .qrel-kind-batch { color: var(--muted, #576c74); }
+.qh-relations .qrel-kind-event { color: var(--warning, #b7791f); }
+.qh-relations .qrel-label { font-size: 13px; overflow-wrap: anywhere; min-width: 0; }
+.qh-relations .qrel-tag { grid-column: 3; font-size: 11px; color: var(--muted, #576c74); }
+.qh-relations .qrel-at { grid-column: 4; font-size: 11px; color: var(--muted, #576c74); font-family: var(--mono, monospace); }
+.qh-relations .qrel-neigh { grid-column: 4; font-size: 10.5px; color: var(--brand, #176b62); }
+
+.qh-relations .qrel-detail { border-left: 1px solid var(--border, #dbe3e6); padding-left: 16px; min-width: 0; }
+.qh-relations .qrel-detail h4 { margin: 0 0 6px; font-size: 13.5px; overflow-wrap: anywhere; }
+.qh-relations .qrel-edges { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; font-size: 12.5px; }
+.qh-relations .qrel-open { min-height: 40px; padding: 8px 14px; border: 1px solid var(--border, #dbe3e6); border-radius: 8px; background: transparent; color: var(--brand, #176b62); cursor: pointer; }
+.qh-relations .qrel-open:hover { border-color: var(--brand, #176b62); }
+
+.qh-relations .qrel-muted { font-size: 13px; color: var(--muted, #576c74); }
+.qh-relations .qrel-error { color: var(--danger, #c53030); font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.qh-relations .qrel-retry { min-height: 36px; padding: 6px 12px; border: 1px solid var(--border, #dbe3e6); border-radius: 8px; background: transparent; color: var(--text, #1b3038); cursor: pointer; }
+.qh-relations .qrel-note { margin: 12px 0 0; font-size: 11.5px; color: var(--muted, #576c74); }
+
+@media (max-width: 900px) {
+  .qh-relations .qrel-grid { grid-template-columns: minmax(0, 1fr); }
+  .qh-relations .qrel-detail { border-left: 0; border-top: 1px solid var(--border, #dbe3e6); padding-left: 0; padding-top: 12px; }
+}
+
+/* M15 r01 · 对象覆盖口径（已生成/未生成） */
+.qh-relations .qrel-coverage { margin: 0 0 10px; font-size: 11.5px; line-height: 1.6; color: var(--muted, #576c74); overflow-wrap: anywhere; }
+
+/* M19 · 视图切换行 / 新对象类型 / 确定性关系图 */
+.qh-relations .qrel-viewbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.qh-relations .qrel-spacer { flex: 1 1 auto; }
+.qh-relations .qrel-depth-label { font-size: 11.5px; color: var(--muted, #576c74); }
+.qh-relations .qrel-chip:disabled { opacity: 0.5; cursor: default; }
+
+.qh-relations .qrel-kind-device { color: var(--brand, #176b62); }
+.qh-relations .qrel-kind-candidate { color: var(--text, #1b3038); }
+.qh-relations .qrel-kind-verifier { color: var(--success, #246b51); }
+.qh-relations .qrel-kind-safety { color: var(--warning, #b7791f); }
+.qh-relations .qrel-detail-note { font-size: 12px; }
+
+/* 图容器：横向可滚，不设 max-height（不劫持 wheel；纵向仍滚页面） */
+.qh-relations .qrel-graphwrap { overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
+.qh-relations .qrel-graph { position: relative; min-width: 0; }
+.qh-relations .qrel-canvas { position: relative; }
+.qh-relations .qrel-gsvg { position: absolute; inset: 0; pointer-events: none; }
+.qh-relations .qrel-gline { stroke: var(--border, #dbe3e6); stroke-width: 1.5; }
+.qh-relations .qrel-gline.qrel-sem-verification { stroke: var(--success, #246b51); }
+.qh-relations .qrel-gline.qrel-sem-impact { stroke: var(--brand, #176b62); }
+.qh-relations .qrel-gline.dim { opacity: 0.18; }
+
+.qh-relations .qrel-gnode {
+  position: absolute; display: grid; grid-template-rows: auto auto auto; gap: 2px; align-content: center;
+  padding: 6px 8px; border: 1px solid var(--border, #dbe3e6); border-radius: 10px;
+  background: var(--surface, #fff); color: var(--text, #1b3038); cursor: pointer; text-align: left; min-width: 0;
+}
+.qh-relations .qrel-gnode.on { border-color: var(--brand, #176b62); box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand, #176b62) 30%, transparent); }
+.qh-relations .qrel-gnode.dim { opacity: 0.3; }
+.qh-relations .qrel-gnode-kind { font-size: 10px; color: var(--muted, #576c74); }
+.qh-relations .qrel-gnode-label { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qh-relations .qrel-gnode-tag { font-size: 10px; color: var(--muted, #576c74); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.qh-relations .qrel-detail-graph { border-left: 0; padding-left: 0; margin-top: 12px; border-top: 1px solid var(--border, #dbe3e6); padding-top: 12px; }
+
+@media (max-width: 900px) {
+  /* 窄容器：图视图自动以横向滚动 + 详情堆叠呈现（列表仍为一等入口） */
+  .qh-relations .qrel-detail-graph { padding-top: 12px; }
+}
+
+
+/* M29 r09 · MAP：示意管网边（虚线，未核实） */
+.qh-relations .qrel-gline.qrel-edge-network { stroke-dasharray: 5 5; }

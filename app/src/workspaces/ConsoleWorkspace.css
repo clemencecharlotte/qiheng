@@ -1,0 +1,99 @@
+.overview .console-decision-brief {
+  border-radius: 16px;
+  padding: 12px 14px;
+  border-top: 3px solid var(--brand);
+}
+
+.overview .console-decision-brief:has(.tag.bad) {
+  border-top-color: var(--danger);
+}
+
+.console-decision-brief .console-decision-brief__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.console-decision-brief .console-decision-brief__eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.console-decision-brief .console-decision-brief__head h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+  letter-spacing: normal;
+}
+
+.console-decision-brief .console-decision-brief__head .tag {
+  white-space: normal;
+}
+
+.console-decision-brief .console-decision-brief__facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  padding: 6px 0;
+  margin: 6px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.console-decision-brief__facts dt {
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.console-decision-brief__facts dd {
+  margin: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.console-decision-brief .hint {
+  font-size: 13px;
+}
+
+.console-decision-brief .decision-actions {
+  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.console-decision-brief .btn {
+  min-height: 44px;
+  white-space: normal;
+}
+
+@media (max-width: 640px) {
+  .overview .console-decision-brief {
+    padding: 16px;
+  }
+
+  .console-decision-brief .console-decision-brief__facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .console-decision-brief__facts > div {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .console-decision-brief .decision-actions .btn {
+    flex: 1 1 110px;
+  }
+}
+
+/* M22 r03 C1/C2：overview 页标题并入主结论卡头；操作路径改 ⓘ 提示 */
+.console-decision-brief__title { margin: 0 0 2px; font-size: 16px; font-weight: 600; }
+.console-decision-brief__title .qh-note-ref { font-weight: 400; }
+.decision-path-tip { display: inline-flex; align-items: center; color: var(--muted, #576c74); font-size: 12.5px; }

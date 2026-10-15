@@ -1,0 +1,9 @@
+{
+  "format": "qh-readonly-demo",
+  "note": "合成夹具，非现场数据",
+  "records": [
+    { "sourceId": "synth-air-1", "entity": "compressor-A3", "metric": "power", "value": 118.5, "unit": "kW", "observedAt": "2026-10-07T08:15:00+08:00" },
+    { "sourceId": "synth-air-1", "entity": "compressor-A3", "metric": "power", "value": 119.1, "unit": "kW", "observedAt": "2026-10-07T08:30:00+08:00" },
+    { "sourceId": "synth-air-1", "entity": "compressor-A3", "metric": "flow", "value": 42.0, "unit": "m3/min", "observedAt": "2026-10-07T08:15:00+08:00" }
+  ]
+}

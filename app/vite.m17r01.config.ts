@@ -1,0 +1,165 @@
+import { defineConfig, type Plugin } from 'vite'
+import react from '@vitejs/plugin-react'
+import http from 'node:http'
+import type { Connect } from 'vite'
+import { authorizeProxyRequest, DATA_PREFIX, type ProxyPolicy } from './src/integration/proxyGuard.ts'
+
+/**
+ * 气衡 M10 r05 · 独立 production preview 配置（隔离树 m17r01 · 4247/4248；不改 app/vite.config.ts，不写 dist-next）。
+ *
+ * · 提供 build 用 define + `vite preview` 用同源代理（configurePreviewServer），
+ *   使候选真正以 production build + preview 代理服务，而非 Vite dev。
+ * · 自实现严格代理：只放行固定路由合同 + 允许方法；写请求要求精确 Origin/Host；
+ *   拒绝 /api/qh-dataevil、双前缀、任意 URL；目标只允许 loopback。
+ * · 能力令牌由本进程从环境读并注入上游请求，**不下发浏览器**；缺令牌 fail closed。
+ * · 只起独立 4247 候选；preview 代理 ≠ 生产部署。
+ */
+const TARGET = process.env.QH_DATA_TARGET || 'http://127.0.0.1:4248'
+const TOKEN = process.env.QH_DATA_TOKEN || ''
+const ORIGINS = (process.env.QH_DATA_ALLOWED_ORIGINS ||
+  'https://4247-a1db149b692927f8.code.cosmoplat.cn,http://127.0.0.1:4247,http://localhost:4247')
+  .split(',').map((s) => s.trim()).filter(Boolean)
+const HOSTS = (process.env.QH_DATA_ALLOWED_HOSTS ||
+  '4247-a1db149b692927f8.code.cosmoplat.cn,127.0.0.1:4247,localhost:4247')
+  .split(',').map((s) => s.trim()).filter(Boolean)
+
+if (!TOKEN) throw new Error('QH_DATA_TOKEN 未设置：独立数据代理 fail closed（拒绝启动）。')
+
+const targetUrl = new URL(TARGET)
+const LOOPBACK = new Set(['127.0.0.1', 'localhost', '::1', '[::1]'])
+if (!LOOPBACK.has(targetUrl.hostname)) {
+  throw new Error(`QH_DATA_TARGET 必须是 loopback，收到：${targetUrl.hostname}`)
+}
+
+const policy: ProxyPolicy = { origins: ORIGINS, hosts: HOSTS }
+
+/** 同源数据代理中间件：dev server 与 preview server 共用同一合同。 */
+function qhDataMiddleware(): Connect.NextHandleFunction {
+  return (req, res, next) => {
+    if (!req.url || !req.url.startsWith(DATA_PREFIX)) return next()
+    const method = (req.method || 'GET').toUpperCase()
+    const guard = authorizeProxyRequest(method, req.url, req.headers, policy)
+    if (!guard.ok) {
+      res.statusCode = guard.status
+      res.setHeader('Content-Type', 'application/json; charset=utf-8')
+      res.end(JSON.stringify({ error: guard.error }))
+      return
+    }
+    const headers: http.OutgoingHttpHeaders = { ...req.headers }
+    headers.host = targetUrl.host
+    headers['x-qh-capability'] = TOKEN
+    const preq = http.request(
+      {
+        hostname: targetUrl.hostname,
+        port: targetUrl.port || 80,
+        path: guard.rest,
+        method,
+        headers,
+      },
+      (pres) => {
+        res.statusCode = pres.statusCode || 502
+        for (const [k, v] of Object.entries(pres.headers)) {
+          const lk = k.toLowerCase()
+          if (v === undefined || lk === 'transfer-encoding' || lk === 'connection') continue
+          res.setHeader(k, v as string | string[])
+        }
+        pres.pipe(res)
+      },
+    )
+    preq.on('error', () => {
+      if (!res.headersSent) {
+        res.statusCode = 502
+        res.setHeader('Content-Type', 'application/json; charset=utf-8')
+        res.end(JSON.stringify({ error: 'upstream_unreachable' }))
+      }
+    })
+    req.pipe(preq)
+  }
+}
+
+const AGENT_PREFIX = '/agent-api'
+const AGENT_TARGET = process.env.QH_AGENT_TARGET || 'http://127.0.0.1:4249'
+const AGENT_TOKEN = process.env.QH_AGENT_TOKEN || ''
+const agentUrl = new URL(AGENT_TARGET)
+if (!LOOPBACK.has(agentUrl.hostname)) {
+  throw new Error(`QH_AGENT_TARGET 必须是 loopback，收到：${agentUrl.hostname}`)
+}
+
+/**
+ * M29 · 同源 agent gateway 代理（仅服务端代理层）：
+ * 去掉 /agent-api 前缀转发到 loopback gateway，changeOrigin，注入 Bearer（仅在服务端，不下发浏览器）。
+ * 缺 QH_AGENT_TOKEN 时 fail closed（503 unavailable），不关闭鉴权。
+ */
+function qhAgentMiddleware(): Connect.NextHandleFunction {
+  return (req, res, next) => {
+    if (!req.url || !req.url.startsWith(AGENT_PREFIX)) return next()
+    if (!AGENT_TOKEN) {
+      res.statusCode = 503
+      res.setHeader('Content-Type', 'application/json; charset=utf-8')
+      res.end(JSON.stringify({ status: 'unavailable', code: 'AGENT_TOKEN_MISSING' }))
+      return
+    }
+    const rest = req.url.slice(AGENT_PREFIX.length) || '/'
+    const headers: http.OutgoingHttpHeaders = { ...req.headers }
+    headers.host = agentUrl.host
+    headers.authorization = `Bearer ${AGENT_TOKEN}`
+    const preq = http.request(
+      { hostname: agentUrl.hostname, port: agentUrl.port || 80, path: rest, method: (req.method || 'GET').toUpperCase(), headers },
+      (pres) => {
+        res.statusCode = pres.statusCode || 502
+        for (const [k, v] of Object.entries(pres.headers)) {
+          const lk = k.toLowerCase()
+          if (v === undefined || lk === 'transfer-encoding' || lk === 'connection') continue
+          res.setHeader(k, v as string | string[])
+        }
+        pres.pipe(res)
+      },
+    )
+    // downstream 关闭/中断即销毁 upstream（正规 MCP child 随 connectMcp 的 abort 关闭）。
+    const kill = () => { if (!preq.destroyed) preq.destroy() }
+    res.on('close', () => { if (!res.writableEnded) kill() })
+    req.on('aborted', kill)
+    preq.on('error', () => {
+      if (!res.headersSent) {
+        res.statusCode = 502
+        res.setHeader('Content-Type', 'application/json; charset=utf-8')
+        res.end(JSON.stringify({ status: 'unavailable', code: 'AGENT_UNREACHABLE' }))
+      }
+    })
+    req.pipe(preq)
+  }
+}
+
+function qhDataProxy(): Plugin {
+  return {
+    name: 'qh-m17r01-data-proxy',
+    configureServer(server) {
+      server.middlewares.use(qhDataMiddleware())
+      server.middlewares.use(qhAgentMiddleware())
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(qhDataMiddleware())
+      server.middlewares.use(qhAgentMiddleware())
+    },
+  }
+}
+
+export default defineConfig({
+  plugins: [react(), qhDataProxy()],
+  define: {
+    __QH_DATA_BASE__: JSON.stringify('/api/qh-data'),
+    __QH_DATA_ENABLED__: JSON.stringify('1'),
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 4247,
+    strictPort: true,
+    allowedHosts: ['.cosmoplat.cn', '.cosmoplat.com', '.cosmoplat.net'],
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 4247,
+    strictPort: true,
+    allowedHosts: ['.cosmoplat.cn', '.cosmoplat.com', '.cosmoplat.net'],
+  },
+})

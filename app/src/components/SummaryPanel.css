@@ -1,0 +1,242 @@
+.summary-panel {
+  min-width: 0;
+}
+
+.summary-panel .summary-panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-bottom: 16px;
+}
+
+.summary-panel .summary-panel__head h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.summary-panel .summary-panel__scope,
+.summary-panel .summary-panel__note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.summary-panel .summary-panel__table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.summary-panel .summary-panel__metric-column {
+  width: 26%;
+}
+
+.summary-panel .summary-panel__table th,
+.summary-panel .summary-panel__table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.summary-panel .summary-panel__table thead th {
+  background: var(--raised);
+  color: var(--text);
+  font-weight: 650;
+}
+
+.summary-panel .summary-panel__table th[scope="row"] {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.summary-panel .summary-panel__table strong {
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-panel .summary-panel__unit {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.summary-panel .summary-panel__constraint {
+  display: grid;
+  gap: 6px;
+}
+
+.summary-panel .summary-panel__verdict {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  border-inline-start: 3px solid currentColor;
+  padding-inline-start: 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.summary-panel .summary-panel__verdict--ok {
+  color: var(--ok-text);
+}
+
+.summary-panel .summary-panel__verdict--warn {
+  color: var(--warn-text);
+}
+
+.summary-panel .summary-panel__verdict--bad {
+  color: var(--bad-text);
+}
+
+.summary-panel .summary-panel__constraint-count {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.summary-panel .summary-panel__note {
+  margin-block: 12px 16px;
+}
+
+.summary-panel .summary-panel__details {
+  border-top: 1px solid var(--border);
+}
+
+.summary-panel .summary-panel__details > summary {
+  min-height: 44px;
+  padding: 12px 4px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.summary-panel .summary-panel__details > summary:hover,
+.summary-panel .summary-panel__details > summary:active {
+  background: var(--raised);
+}
+
+.summary-panel .summary-panel__details > summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.summary-panel .summary-panel__explanations {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px 24px;
+  padding-block: 8px;
+}
+
+.summary-panel .summary-panel__explanation {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.summary-panel .summary-panel__explanation h3,
+.summary-panel .summary-panel__explanation h4 {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.summary-panel .summary-panel__explanation p,
+.summary-panel .summary-panel__explanation ul {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.summary-panel .summary-panel__explanation ul {
+  padding-inline-start: 20px;
+}
+
+.summary-panel .summary-panel__explanation li + li {
+  margin-top: 6px;
+}
+
+.summary-panel .summary-panel__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .summary-panel {
+    padding: 12px;
+  }
+
+  .summary-panel .summary-panel__table th,
+  .summary-panel .summary-panel__table td {
+    padding: 10px 6px;
+  }
+
+  .summary-panel .summary-panel__table strong {
+    font-size: 16px;
+  }
+
+  .summary-panel .summary-panel__explanations {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 360px) {
+  .summary-panel .summary-panel__table {
+    font-size: 13px;
+  }
+
+  .summary-panel .summary-panel__table th,
+  .summary-panel .summary-panel__table td {
+    padding-inline: 4px;
+  }
+}
+
+/* S1 · 紧凑 12 列总览（2026-10-07）：矩阵保持表格语义，前置 4 张真实可计算指标卡 */
+.summary-panel { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+.summary-panel__head { grid-column: span 12; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.summary-panel__head h2 { margin: 0; }
+.summary-panel__metrics {
+  grid-column: span 12;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
+}
+.summary-metric {
+  border: 1px solid var(--border);
+  border-radius: var(--r-base, 16px);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  padding: 14px 16px;
+  display: grid; gap: 4px;
+}
+.summary-metric .k { font-size: 12px; color: var(--muted); }
+.summary-metric .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.summary-metric .v small { font-size: 11px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+.summary-panel__table { grid-column: span 12; }
+.summary-panel__note { grid-column: span 12; }
+.summary-panel__details { grid-column: span 12; }
+@media (max-width: 1100px) {
+  .summary-panel__metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .summary-panel__metrics { gap: 12px; }
+}
+.summary-panel .fn-ref { grid-column: span 12; justify-self: end; color: var(--brand); text-decoration: none; font-size: 10px; }

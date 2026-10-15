@@ -1,0 +1,30 @@
+.qh-demo-fleet { min-width:0; margin-block:24px; color:var(--text); }
+.qh-fleet-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+.qh-fleet-head h3,.qh-machine-top h4 { margin:0; }.qh-fleet-head p,.qh-fleet-boundary,.qh-fleet-context { color:var(--muted); font-size:.9rem; line-height:1.5; }
+.qh-fleet-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); gap:12px; }
+.qh-demo-machine { min-width:0; padding:16px; border:1px solid var(--material-read-border,var(--border)); border-radius:var(--radius-lg,14px);
+  background:var(--material-read-fill,var(--surface)); color:var(--text); box-shadow:var(--material-read-shadow,var(--shadow-soft)); }
+.qh-machine-top { display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px; }.qh-machine-top h4{font-size:1rem;}.qh-machine-top span,.qh-machine-id{font-size:.78rem;color:var(--muted);overflow-wrap:anywhere;}
+.qh-fleet-glyph { height:96px; display:grid; place-items:center; margin-block:8px; }
+/* r40: artwork svg sizing lives in product-geometry.css (single consumer contract); compact
+   model only shortens the stage. Old .glyph-* inline-glyph rules removed: no TSX renders them. */
+.qh-demo-machine.is-compact .qh-fleet-glyph { height:104px; }
+.qh-demo-machine.is-compact .qh-fleet-glyph .qh-device-art svg { height:104px; }
+.qh-machine-state { display:flex; align-items:center; gap:6px; min-height:24px; font-size:.85rem; }
+.qh-state-dot { width:7px; height:7px; border-radius:50%;background:var(--muted); }.qh-demo-machine[data-state=running] .qh-state-dot{background:var(--brand);}
+.qh-demo-machine[data-state=fault]{border-color:var(--warning,#b87938);}.qh-demo-machine[data-state=fault] .qh-state-dot{background:var(--warning,#b87938);}.qh-demo-machine[data-state=loading] .qh-state-dot{background:var(--brand);}
+.qh-machine-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-block:10px; }
+.qh-machine-fields label,.qh-fleet-head label{display:grid;gap:4px;font-size:.85rem;min-width:0;}
+.qh-machine-fields select,.qh-fleet-head select,.qh-machine-actions button { min-width:0; min-height:44px; border:1px solid var(--border); border-radius:var(--radius-md,10px); background:var(--material-control-fill,var(--surface)); color:var(--text); font:inherit; padding:8px; }
+.qh-machine-actions { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }.qh-machine-actions button{cursor:pointer;}.qh-machine-actions button[aria-checked=true]{border-color:var(--brand);}
+.qh-demo-fleet button:focus-visible,.qh-demo-fleet select:focus-visible { outline:2px solid var(--brand);outline-offset:3px; }
+/* r40: per-device machine animation moved to product-geometry.css (.qh-mech vector mechanisms,
+   keyed on [data-state] + --machine-play-state). The former .glyph-* rules here matched no DOM
+   after DeviceArtwork replaced the inline glyphs; dead selectors/keyframes removed. */
+
+/* M29 r35 · #3 常驻长声明→按需披露（渐进披露） */
+.qh-fleet-boundary > summary, .qh-machine-detail > summary { cursor: pointer; font-size: .82rem; color: var(--muted); min-height: 44px; display: inline-flex; align-items: center; }
+.qh-fleet-boundary > p { margin: 4px 0 0; }
+/* r41 · 状态局部语义提示（故障停机构 / 加载倍率），集中小标签，不每卡堆警告 */
+.qh-fault-hint { margin-left:6px; padding:1px 7px; border-radius:7px; border:1px solid var(--bad-text,#b3261e); color:var(--bad-text,#b3261e); font-size:11px; }
+.qh-pace-hint { margin-left:6px; padding:1px 7px; border-radius:7px; border:1px solid var(--border); color:var(--muted); font-size:11px; }
