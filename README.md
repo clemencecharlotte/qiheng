@@ -3,13 +3,13 @@
 气衡是在 COSMO Code 平台真实开发的空压站协同决策 Web 应用。将方案提案、独立复验、人工授权、决策护照与合成执行分开，提供设备原理可视化、关系 MAP、趋势回放与只读 MCP 查询。
 
 - 应用：https://4247-a1db149b692927f8.code.cosmoplat.cn/
-- 源码基线：2026-10-15 产品 main `3fedd4ce004e194eef97037645e4f369af15318a`（r39–r43累计改件）。
+- 源码基线：以 `SOURCE-MANIFEST.json` 的 `sourceCommit` 和逐件SHA256为准，不以历史阶段名称代替当前版本。公开快照r44对应产品main `979ddc88425479fcfdd2ff5e03250a527f89b927`。
 - 本仓是正式提交用的独立开源快照，不含私人仓历史、凭据、个人信息截图或主办方工业原始数据。
 - 文件来源及 SHA256：`SOURCE-MANIFEST.json`。清单记录导出原件；本仓新增 README、LICENSE、忽略规则不在原件清单内。
 
 ## 快速运行
 
-Node.js 22+，npm；只读数据服务另需 Python 3.11+。
+Node.js 22.12+（或更新的受支持版本），npm；只读数据服务另需 Python 3.11+。2026-10-15独立克隆检查使用Node.js 24.16.0、npm 11.13.0、Python 3.12；详见[复现记录](docs/REPRODUCIBILITY.md)。
 
 ```sh
 cd app
@@ -26,7 +26,11 @@ npm test
 npm run build
 ```
 
+Windows若遇到共享npm缓存的`EEXIST`，可在`app/`中改用`npm ci --cache ../.npm-cache --no-audit --no-fund`，不需要删除全局缓存、使用`--force`或改系统权限。
+
 正式平台部署使用 `app/vite.m17r01.config.ts`，与默认本地配置不同。该配置依赖服务端能力令牌，缺失即拒绝启动，不能为方便演示关闭鉴权。
+
+子服务README保留了一些历史平台端口及`vite.m07.config.ts`示例；该历史配置不在此公开快照中，不要直接照抄旧预览地址。基础前端用上述默认配置；完整平台代理以本仓实际存在的`vite.m17r01.config.ts`及其服务端环境合同为准，不复制真实令牌。
 
 ## 目录与功能
 
