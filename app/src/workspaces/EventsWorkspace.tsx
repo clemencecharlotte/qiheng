@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useEvidenceFocus, type EvidenceFocus } from '../components/useEvidenceFocus'
 import DecisionChainView from '../components/DecisionChainView'
 import DecisionDetailPanel from '../components/DecisionDetailPanel'
@@ -6,8 +6,8 @@ import SafetyReviewPanel from '../components/SafetyReviewPanel'
 import HistoryReviewPanel from '../components/HistoryReviewPanel'
 import EventTimeline from '../components/EventTimeline'
 import SupplyGapPanel from '../components/SupplyGapPanel'
-import NoteRef from '../components/console/NoteRef'
 import { Popover } from '../components/ui/Disclosure'
+import '../styles/events-list.css'
 import {
   historyStatusToChainStatus,
   runHistoryChain,
@@ -16,7 +16,7 @@ import {
 import type { ScenarioRun } from '../domain/engine'
 import { analyzeSupplyGap } from '../domain/capacity'
 import { verifyPlanConstraints } from '../domain/constraints'
-import { buildTimeline, type EventLocate, type TimelineEvent } from '../domain/events'
+import { buildTimeline, type EventCategory, type EventLocate, type TimelineEvent } from '../domain/events'
 import { assessHealth } from '../domain/health'
 import {
   buildHistoryFixture,
@@ -130,75 +130,231 @@ export default function EventsWorkspace({
     onLocate?.(event.locate)
   }
 
+  // r44 F · 一级扫读列表 + 二级详情抽屉：级别/对象/家族映射均取自真实字段。
+  const levelOf = (e: TimelineEvent): 'normal' | 'warn' | 'severe' | 'unknown' => {
+    if (/拒绝|阻断|无效|禁用|无解/.test(e.status)) return 'severe'
+    if (/待复核|需关注|须重审|待值班|历史/.test(e.status)) return 'warn'
+    if (/通过|可行|允许|已批准|已驳回|提示/.test(e.status)) return 'normal'
+    return 'unknown'
+  }
+  const objectOf = (e: TimelineEvent): string => {
+    if (e.locate && e.locate.kind === 'history') return e.locate.machineId
+    if (e.category === 'schedule') return '调度建议'
+    if (e.category === 'safety_review') return '复验/安全链'
+    if (e.category === 'human_action') return '人工处置'
+    return '全站'
+  }
+  const CATEGORY_LABEL: Record<EventCategory, string> = {
+    data_quality: '数据质量',
+    health_rule: '规则异常',
+    schedule: '调度',
+    safety_review: '复验审查',
+    human_action: '人工处置',
+  }
+  const [tab, setTab] = useState<'all' | 'dq' | 'hr' | 'sched' | 'human'>('all')
+  const inTab = (e: TimelineEvent) =>
+    tab === 'all' ||
+    (tab === 'dq' && e.category === 'data_quality') ||
+    (tab === 'hr' && e.category === 'health_rule') ||
+    (tab === 'sched' && (e.category === 'schedule' || e.category === 'safety_review')) ||
+    (tab === 'human' && e.category === 'human_action')
+  const filtered = timeline.filter(inTab)
+  const countWarn = timeline.filter((e) => levelOf(e) === 'warn').length
+  const countBad = timeline.filter((e) => levelOf(e) === 'severe').length
+  const selectedEvent = timeline.find((e) => e.id === selectedEventId) ?? null
+  const rowRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+  const deepRef = useRef<HTMLDetailsElement | null>(null)
+  const lastRowRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!selectedEvent) return
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') setSelectedEventId(null)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [selectedEvent])
+  useEffect(() => {
+    if (!selectedEvent && lastRowRef.current) {
+      rowRefs.current[lastRowRef.current]?.focus()
+      lastRowRef.current = null
+    }
+  }, [selectedEvent])
+  const tabs: Array<{ id: typeof tab; label: string; n: number }> = [
+    { id: 'all', label: '全部', n: timeline.length },
+    { id: 'dq', label: '数据质量', n: timeline.filter((e) => e.category === 'data_quality').length },
+    { id: 'hr', label: '规则异常', n: timeline.filter((e) => e.category === 'health_rule').length },
+    { id: 'sched', label: '调度与复验', n: timeline.filter((e) => e.category === 'schedule' || e.category === 'safety_review').length },
+    { id: 'human', label: '人工处置', n: timeline.filter((e) => e.category === 'human_action').length },
+  ]
+
   return (
     <div className="workspace">
-      <section className="panel event-filters">
-        <div className="panel-head">
-          <h2>事件对象选择</h2>
-          <span className="panel-head-tags">
+      <section className="qel" aria-label="事件一级列表">
+        <div className="qel-head">
+          <div>
+            <p className="qel-eyebrow">EVENTS / 事件</p>
+            <h2 className="qel-title">事件</h2>
+            <p className="qel-sub">先找到事，再看证据；离线批次/数据质量与合成执行故障/审计分类呈现、不混业务状态。</p>
+          </div>
+          <div className="qel-head-actions">
             {observationLabel ? (
               <Popover
-                label={<span className="tag muted">同源观察时刻 {observationLabel}</span>}
+                label={<span className="tag muted">{observationLabel} · 同源时刻</span>}
                 ariaLabel={`同源观察时刻 ${observationLabel}：来源与共用说明`}
               >
                 <div className="source-details-body">
                   <p>同源观察时刻 {observationLabel}：调度视图与回放视图的观察时间对齐，但两个来源分别选择、互不混用。</p>
-                  <p>共用合成调度输入：调度总览、方案比较、复验人审、关联证据（同一场景/种子生成，可互相复算）。</p>
-                  <p>读取合成回放来源：历史回放实验台、数据接入与治理事件（只读分钟数据，独立于调度）。</p>
-                  <p className="hint">两者不并入同一复验结论；观察时刻只作时间对齐回显，不参与任何审批判定。</p>
+                  <p className="hint">观察时刻只作时间对齐回显，不参与任何审批判定。</p>
                 </div>
               </Popover>
             ) : null}
-          </span>
+          </div>
         </div>
-        <div className="toolbar">
-          <NoteRef note="synthetic" />
-          <label className="field">
+
+        <ul className="qel-counts">
+          <li className="qel-count"><b>{timeline.length}</b><span>事件总数</span></li>
+          <li className="qel-count is-warn"><b>{countWarn}</b><span>待复核/需关注</span></li>
+          <li className="qel-count is-bad"><b>{countBad}</b><span>无效/阻断/拒绝</span></li>
+          <li className="qel-count"><b>{decisions.filter((d) => d.scenario === scenario).length}</b><span>人工处置记录</span></li>
+        </ul>
+
+        <div className="qel-tabs" role="group" aria-label="事件分类">
+          {tabs.map((t) => (
+            <button key={t.id} type="button" className="qel-tab" aria-pressed={tab === t.id} onClick={() => setTab(t.id)}>
+              {t.label} <span className="qel-tab-n">{t.n}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="qel-filters">
+          <label className="qel-field">
             <span>调度场景（合成调度）</span>
-            <select
-              value={scenario}
-              onChange={(e) => onScenarioChange(e.target.value as ScenarioId)}
-            >
+            <select value={scenario} onChange={(e) => onScenarioChange(e.target.value as ScenarioId)}>
               {SCENARIOS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
+                <option key={s.id} value={s.id}>{s.label}</option>
               ))}
             </select>
           </label>
-          <label className="field">
+          <label className="qel-field">
             <span>回放夹具（合成历史）</span>
             <select value={fixtureId} onChange={(e) => onFixtureChange(e.target.value)}>
               {HISTORY_FIXTURES.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.label}
-                </option>
+                <option key={f.id} value={f.id}>{f.label}</option>
               ))}
             </select>
           </label>
-          <details className="source-details event-source-details">
+          <details className="qel-note qel-tech">
             <summary>来源与边界详情</summary>
             <div className="source-details-body">
-              <p>
-                合成调度示例 · 固定种子 {run.series.seed} · {DATA_SOURCES.synthetic_schedule.scope}
-              </p>
-              <p>
-                合成回放夹具 · 固定种子 {FIXED_HISTORY_SEED} ·{' '}
-                {DATA_SOURCES.synthetic_history.scope}（只读，与调度来源完全分开）
-              </p>
+              <p>合成调度示例 · 固定种子 {run.series.seed} · {DATA_SOURCES.synthetic_schedule.scope}</p>
+              <p>合成回放夹具 · 固定种子 {FIXED_HISTORY_SEED} · {DATA_SOURCES.synthetic_history.scope}（只读，与调度来源完全分开）</p>
               <p>{SCHEDULE_CENTRIFUGAL_EXCLUSION_NOTE}</p>
-              <ul>
-                {[
-                  ...DATA_SOURCES.synthetic_schedule.unverifiedBoundaries,
-                  ...DATA_SOURCES.synthetic_history.unverifiedBoundaries,
-                ].map((b) => (
-                  <li key={b}>{b}</li>
-                ))}
-              </ul>
             </div>
           </details>
         </div>
+
+        <div className="qel-list-wrap">
+          <ul className="qel-list">
+            {filtered.map((e) => (
+              <li key={e.id}>
+                <button
+                  type="button"
+                  className="qel-row"
+                  ref={(el) => { rowRefs.current[e.id] = el }}
+                  aria-expanded={selectedEventId === e.id}
+                  onClick={() => { lastRowRef.current = e.id; setSelectedEventId(e.id) }}
+                >
+                  <span className="qel-cell-time qel-time">{e.time}</span>
+                  <span className="qel-cell-level"><span className={`qel-lv qel-lv--${levelOf(e)}`}>{e.status}</span></span>
+                  <span className="qel-cell-object">{objectOf(e)}<span className="qel-object-kind">{CATEGORY_LABEL[e.category]}</span></span>
+                  <span className="qel-cell-summary qel-summary">{e.reason || e.title}</span>
+                  <span className="qel-cell-source">
+                    <span className={`qel-family qel-family--${e.source === 'synthetic_history' ? 'offline' : 'synthetic'}`}>
+                      {e.source === 'synthetic_history' ? '合成回放' : '合成调度'}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+            {filtered.length === 0 ? (
+              <li><p className="qel-empty">当前筛选下无事件；不造“待处理”。</p></li>
+            ) : null}
+          </ul>
+        </div>
       </section>
+
+      {selectedEvent ? (
+        <div className="qel-scrim" onClick={() => setSelectedEventId(null)}>
+          <aside
+            className="qel-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="qel-drawer-h"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="qel-drawer-head">
+              <div>
+                <span className={`qel-lv qel-lv--${levelOf(selectedEvent)}`}>{selectedEvent.status}</span>
+                <h3 id="qel-drawer-h">{selectedEvent.title}</h3>
+                <div className="qel-drawer-tags">
+                  <span className="qel-family">{CATEGORY_LABEL[selectedEvent.category]}</span>
+                  <span className={`qel-family qel-family--${selectedEvent.source === 'synthetic_history' ? 'offline' : 'synthetic'}`}>
+                    {selectedEvent.source === 'synthetic_history' ? '合成回放夹具' : '合成调度示例'}
+                  </span>
+                  <span className="qel-time">{selectedEvent.time}</span>
+                </div>
+              </div>
+              <button type="button" className="qel-close" onClick={() => setSelectedEventId(null)}>关闭 Esc</button>
+            </div>
+
+            <section className="qel-sec">
+              <h4><span className="qel-sec-n">1</span>发生了什么</h4>
+              <p className="qel-sec-note">{selectedEvent.detail}</p>
+            </section>
+            <section className="qel-sec">
+              <h4><span className="qel-sec-n">2</span>影响对象</h4>
+              <dl className="qel-facts">
+                <div><dt>对象</dt><dd>{objectOf(selectedEvent)}</dd></div>
+                <div><dt>时轴定位</dt><dd>{selectedEvent.locate ? `${selectedEvent.locate.label}（${selectedEvent.locate.kind === 'history' ? '回放时轴' : '调度时轴'}）` : '未关联时轴'}</dd></div>
+              </dl>
+            </section>
+            <section className="qel-sec">
+              <h4><span className="qel-sec-n">3</span>证据 / 来源</h4>
+              <ul className="qel-lines">
+                {selectedEvent.evidenceRefs.map((r) => <li key={r} className="qel-mono">{r}</li>)}
+              </ul>
+              <p className="qel-sec-note">合成数据、固定种子；只读呈现，不冒充现场记录。</p>
+            </section>
+            <section className="qel-sec">
+              <h4><span className="qel-sec-n">4</span>可执行的下一步</h4>
+              <div className="qel-actions">
+                {selectedEvent.locate ? (
+                  <button type="button" className="qel-btn qel-btn--primary" onClick={() => handleLocate(selectedEvent)}>定位到时轴</button>
+                ) : null}
+                <button
+                  type="button"
+                  className="qel-btn"
+                  onClick={() => {
+                    setSelectedEventId(null)
+                    const deep = deepRef.current
+                    if (deep) { deep.open = true; deep.scrollIntoView({ block: 'start' }) }
+                  }}
+                >
+                  展开处置与证据深区
+                </button>
+              </div>
+              <p className="qel-sec-note">只读事件不提供“已处理/已解决”等假状态；批准/驳回仅在复验人审深区内由人执行。</p>
+            </section>
+            <details className="qel-tech">
+              <summary>技术原件（JSON）</summary>
+              <pre>{JSON.stringify(selectedEvent, null, 2)}</pre>
+            </details>
+          </aside>
+        </div>
+      ) : null}
+
+      <details className="panel" ref={deepRef}>
+        <summary style={{ cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center' }}>处置与证据深区（对照 / 证据链 / 批准入口，按需展开）</summary>
 
       <EventTimeline
         events={timeline}
@@ -341,6 +497,7 @@ export default function EventsWorkspace({
         overallStatus={historyStatusToChainStatus(historyReview.status)}
         statusLabel="只读回看（无批准）"
       />
+      </details>
     </div>
   )
 }

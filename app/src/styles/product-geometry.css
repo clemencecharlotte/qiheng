@@ -106,3 +106,41 @@
  .trend-svg .axis-text,.qh-history-trend svg text {font-size:16px;fill:var(--text);opacity:1;}
 }
 @media(prefers-reduced-motion:reduce) {.trend-svg .series,.qh-host-pb .hpb-line,.qh-history-trend svg rect {transition:none;}}
+
+/* r44 C - unified workspace head: one shell, inner rows transparent; single-tab routes render no nav row. */
+.app-shell.appearance-host .ws-head {
+  position: sticky; top: 8px; z-index: 46;
+  box-sizing: border-box;
+  width: calc(100% - 2 * var(--shell-inline, 18px));
+  max-width: calc(1600px - 2 * var(--shell-inline, 18px));
+  margin: 0 auto;
+  border: 1px solid var(--border);
+  border-radius: var(--surface-radius, 16px);
+  background: color-mix(in srgb, var(--surface) calc(var(--qh-glass-fill, 0.76) * 100%), transparent);
+  -webkit-backdrop-filter: blur(var(--qh-glass-blur, 12px)) saturate(var(--qh-glass-sat, 140%));
+  backdrop-filter: blur(var(--qh-glass-blur, 12px)) saturate(var(--qh-glass-sat, 140%));
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.10);
+  display: grid; grid-template-rows: auto auto;
+}
+.app-shell.appearance-host .ws-head .app-topbar,
+.app-shell.appearance-host .ws-head .sub-nav {
+  position: static; top: auto; width: auto; max-width: none; margin: 0;
+  border: 0; border-radius: 0; background: transparent;
+  -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none;
+}
+.app-shell.appearance-host .ws-head .app-topbar { min-height: 52px; padding: 4px 16px; }
+.app-shell.appearance-host .ws-head .sub-nav {
+  min-height: 44px; padding: 2px 8px 6px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+@media (max-width: 640px) {
+  .app-shell.appearance-host .ws-head { top: 4px; }
+  .app-shell.appearance-host .ws-head .app-topbar { min-height: 48px; padding: 3px 8px; }
+  .app-shell.appearance-host .ws-head .sub-nav { overflow-x: auto; flex-wrap: nowrap; }
+}
+
+/* r44 A-11: source control wrapper no double border/pill-in-pill. */
+.app-shell .source-bar-controls .field { border: 0; padding: 0; background: transparent; border-radius: 0; }
+.app-shell .source-bar-controls .field > span { font-size: 12px; color: var(--muted); }
+/* r44 D: shell cutaway window reads as intentional viewport. */
+.qh-mech-shell .mech-window { fill: color-mix(in srgb, var(--surface) 55%, transparent); stroke: var(--brand); stroke-width: 1.2; }

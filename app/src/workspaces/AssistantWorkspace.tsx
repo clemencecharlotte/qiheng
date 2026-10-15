@@ -1,12 +1,10 @@
 import { useMemo, useState } from 'react'
 import SourceBadge from '../components/SourceBadge'
-import QaPanel, { type QaView } from '../components/QaPanel'
 import RoleViews from '../components/RoleViews'
 import AuditPanel, { type AuditExportFeedback } from '../components/AuditPanel'
 import PassportPanel from '../components/PassportPanel'
 import type { EvidenceContext, EvidenceWorkspace } from '../domain/evidence'
 import { runHistoryChain, runScheduleChain } from '../domain/chain'
-import { sourceIdsForScope } from '../domain/sources'
 import type { ScenarioRun } from '../domain/engine'
 import { verifyPlanConstraints } from '../domain/constraints'
 import { assessHealth } from '../domain/health'
@@ -28,11 +26,6 @@ import {
   type AuditEvent,
   type AuditExportState,
 } from '../domain/audit'
-import {
-  detectNarratorConfig,
-  type NarratedAnswer,
-  type NarratorTransport,
-} from '../domain/narrator'
 
 interface Props {
   scenario: ScenarioId
@@ -50,9 +43,6 @@ interface Props {
   effectiveDecision: EffectiveDecision
   onAudit: (partial: Parameters<typeof makeAuditEvent>[1]) => void
   onJump: (workspace: EvidenceWorkspace, target: string, originId?: string) => void
-  /** M27 B · App 受控 QA 视图（随唯一 entry 快照捕获/恢复）。 */
-  qaView?: QaView | null
-  onQaViewChange?: (v: QaView | null) => void
   /** M29 · 真实 passportId 定位（来自 route.query）。 */
   passportId?: string | null
   /** M29 r30 · 目的页来自 agent/map 时的返回本次来源入口。 */
@@ -88,11 +78,8 @@ export default function AssistantWorkspace({
   onFixtureChange,
   decisions,
   auditEvents,
-  effectiveDecision,
   onAudit,
   onJump,
-  qaView,
-  onQaViewChange,
   passportId = null,
   returnSourceLabel,
   onReturnToSource,
@@ -139,13 +126,6 @@ export default function AssistantWorkspace({
   )
 
   // 只把“当前有效”处置传给问答，避免旧版 / 未关联审计的记录在问答里被说成已批准。
-  const currentDecision =
-    effectiveDecision.status === 'effective' ? effectiveDecision.decision : null
-  const decisionEventId = effectiveDecision.auditEvent?.id ?? null
-
-  const narratorConfig = useMemo(() => detectNarratorConfig(), [])
-  const narratorTransport: NarratorTransport | null = null
-
   const exportState: AuditExportState = useMemo(() => {
     const summary = summarizeQuality(quality)
     const rec = run.recommendation
@@ -186,23 +166,6 @@ export default function AssistantWorkspace({
       localOnly: true,
     }
   }, [run, quality, scenarioLabel, historyReview, auditEvents, decisions, runIdentity])
-
-  const handleAnswered = (question: string, answer: NarratedAnswer) => {
-    onAudit({
-      kind: 'qa',
-      scenario,
-      sourceIds: sourceIdsForScope(answer.sourceScope),
-      sourceScope: answer.sourceScope,
-      inputSummary: question,
-      conclusion: answer.conclusion,
-      evidenceIds: answer.evidence.map((e) => e.id),
-      operatorAction: answer.refused
-        ? '问答拒绝（未修改任何审批 / 状态）'
-        : answer.narrationMode === 'model'
-          ? '模型润色（仅解释）'
-          : '规则解释',
-    })
-  }
 
   const handleExport = (format: 'json' | 'csv' | 'html') => {
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
@@ -297,20 +260,11 @@ export default function AssistantWorkspace({
       </section>
 
       <div>
-        <QaPanel
-          ctx={ctx}
-          scenarioLabel={scenarioLabel}
-          narratorConfig={narratorConfig}
-          narratorTransport={narratorTransport}
-          safetyAllowsApproval={scheduleChain.safety.verdict === 'allow'}
-          currentDecision={currentDecision}
-          decisionEventId={decisionEventId}
-          runIdentity={runIdentity}
-          onJump={onJump}
-          view={qaView ?? null}
-          onViewChange={onQaViewChange ?? (() => {})}
-          onAnswered={handleAnswered}
-        />
+        <section className="panel">
+          <div className="panel-head"><h2>可信问答（聊天）已并入智能体工作区</h2></div>
+          <p className="hint">本页保留记录/角色/审计/护照深区；聊天会话请走智能体入口（同一会话快照恢复）。</p>
+          <a className="btn" href="#/agent">进入智能体聊天 →</a>
+        </section>
       </div>
 
       <RoleViews ctx={ctx} auditEvents={auditEvents} onJump={onJump} />

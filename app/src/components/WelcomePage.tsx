@@ -19,6 +19,7 @@ import NativeDemoPlayer from './w1/NativeDemoPlayer'
 import { createPlaybackController } from './w1/demoPlaybackController'
 import type { CapabilityItem } from './w1/capabilityModel'
 import './welcome/welcome.css'
+import '../styles/r44-welcome.css'
 import './welcome/w1-slot.css'
 
 interface Props {
@@ -289,7 +290,7 @@ export default function WelcomePage({ onEnter, onAuth, returning = false, sceneP
             title="同一套外观，贯穿评审判读"
             subtitle="展台随当前环境档位呈现外观。"
           />
-          <p className="qh-w1-capnote">展台外观与流程为抽象示意<NoteRef note="flow" /></p>
+          <p className="qh-w1-capnote qh-note-inline">展台外观与流程为抽象示意<NoteRef note="flow" /></p>
         </section>
 
         <section className="qh-w1-caps" id="qh-caps" aria-labelledby="qh-caps-h">
@@ -298,13 +299,13 @@ export default function WelcomePage({ onEnter, onAuth, returning = false, sceneP
             capabilities={CAPABILITIES}
             onNavigate={(route) => onNavigate?.(route)}
           />
-          <p className="qh-w1-capnote">入口开放范围与在线状态以实际接入为准<NoteRef note="readonly" /></p>
+          <p className="qh-w1-capnote qh-note-inline"><NoteRef note="readonly" /><span className="sr-only">入口开放范围与在线状态以实际接入为准</span></p>
         </section>
 
         <section className="qh-w1-caps" id="qh-device-wheel" aria-labelledby="qh-device-wheel-h">
-          <h2 id="qh-device-wheel-h" className="sr-only">设备演示图册</h2>
+          <h2 id="qh-device-wheel-h" className="sr-only">设备图册</h2>
           <PreviewWheel
-            label="设备演示图册（演示库，不是当前站机组）"
+            label="设备图册 · 演示"
             items={DEMO_DEVICE_TYPES.map<PreviewWheelItem>((t) => ({
               id: t.id,
               title: t.name,
@@ -312,7 +313,10 @@ export default function WelcomePage({ onEnter, onAuth, returning = false, sceneP
               content: <div className="qh-wheel-device"><DeviceGlyph id={t.id} phase={INFORMATIVE_PHASE[t.id] ?? 0} /><details><summary>设备资料</summary><p>{t.statusNote}（{t.boundaryNote}）</p></details></div>,
             }))}
           />
-          <p className="qh-w1-capnote">演示设备库与真实机组分开；不改变调度/安全资格<NoteRef note="readonly" /></p>
+          <details className="qh-note-details">
+            <summary>演示说明</summary>
+            <p>演示设备库与真实机组分开；不改变调度/安全资格。<NoteRef note="readonly" /></p>
+          </details>
         </section>
 
         <section className="qh-rail" id="qh-process" aria-labelledby="qh-process-h">
@@ -333,7 +337,10 @@ export default function WelcomePage({ onEnter, onAuth, returning = false, sceneP
                   <span className="fv-l">理解它如何被调度。</span>
                 </h2>
               </div>
-              <p className="qh-flowval-sub rv">选择设备类型查看状态与边界；演示开关只改展示，未知安全边界不会被演示成可启动。</p>
+              <details className="qh-note-details rv">
+                <summary>说明</summary>
+                <p>选择设备类型查看状态与边界；演示开关只改展示，未知安全边界不会被演示成可启动。</p>
+              </details>
             </div>
             <div className="qh-flowval-stage rv">
               <DeviceSystemExperience onOpenDemo={onOpenDemo} hostObservation={hostObservation} hostPlayback={hostPlayback} deviceView={initialDeviceView ?? null} onDeviceViewChange={onDeviceViewChange} />
@@ -378,15 +385,18 @@ export default function WelcomePage({ onEnter, onAuth, returning = false, sceneP
 
             <aside className="qh-passport rv" aria-labelledby="qh-passport-h">
               <div className="qh-passport-hd">
-                <b id="qh-passport-h">最新决策护照（只读）</b>
+                <b id="qh-passport-h">最新护照</b>
                 <span>{store.corrupted ? 'storage' : 'readonly'}</span>
               </div>
               {store.corrupted ? (
                 <p className="hint neg">护照本地存储损坏或不可用：只读展示，未持久化；说明见「已封存成果」栏。</p>
               ) : latest ? (
-                /* r40 ⑤·3：最新护照明细已在左侧「已封存成果」（PassportProofRail）逐卡展示，
-                   此处不再双显同一 store 数据，只留指引与警示；空态/损坏态分支保持不变。 */
-                <p className="hint">最新一份已封存于左侧「已封存成果」列表；本入口不再重复展开同一记录，逐条证据可在记录页只读查看。</p>
+                <div className="qh-passport-brief">
+                  <code className="qh-passport-id">{latest.passportId}</code>
+                  <p className="qh-passport-line">{latest.status}（{latest.authorization}）</p>
+                  <p className="qh-passport-line">候选 / 复验：合法 {latest.summary.legal} · 拒绝 {latest.summary.rejected} · 无解 / 未运行 {latest.summary.notRun}</p>
+                  <a className="link-btn" href="#/records/audit">查看该护照证据 →</a>
+                </div>
               ) : (
                 <div className="qh-passport-empty">
                   <p className="hint">
@@ -398,7 +408,6 @@ export default function WelcomePage({ onEnter, onAuth, returning = false, sceneP
                 </div>
               )}
               {store.warnings.length ? <p className="hint neg">{store.warnings[0]}</p> : null}
-              <div className="qh-passport-ft">护照只读摘要<NoteRef note="passport" /></div>
             </aside>
           </div>
         </section>

@@ -319,8 +319,8 @@ export default function NativeDemoPlayer(props: NativeDemoPlayerProps) {
         </div>
       ) : null}
 
-      <div className="u-w1-demo__events">
-        <h5 className="u-w1-demo__events-h">事件时间表</h5>
+      <details className="u-w1-demo__events qh-note-details">
+        <summary>事件时间表（{events.length}）</summary>
         <ol className="u-w1-demo__event-list">
           {events.map((e, i) => (
             <li key={i} className="u-w1-demo__event">
@@ -329,7 +329,7 @@ export default function NativeDemoPlayer(props: NativeDemoPlayerProps) {
             </li>
           ))}
         </ol>
-      </div>
+      </details>
       {fixtureBadge ? <p className="u-w1-natdemo__fixture">{fixtureBadge}</p> : null}
       {footnote ? <p className="u-w1-demo__footnote">{footnote}</p> : null}
     </div>

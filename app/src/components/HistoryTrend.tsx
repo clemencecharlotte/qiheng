@@ -94,6 +94,18 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
   const keyIndex = (delta: number) =>
     count === 0 ? 0 : Math.min(count - 1, Math.max(0, keyBase + delta))
 
+  // r44 G · 真实序列曲线：null 断线不连穿；与柱同源同刻；填充层低 alpha，线/点在其上。
+  const yOf = (v: number) => padding.top + plotH - (v / max) * plotH
+  let curveD = ''
+  let pen = false
+  for (let i = windowStart; i < windowEnd; i++) {
+    const v = points[i]?.value ?? null
+    if (v === null) { pen = false; continue }
+    const x = centerX(i)
+    curveD += `${pen ? 'L' : 'M'}${x.toFixed(1)} ${yOf(v).toFixed(1)} `
+    pen = true
+  }
+
   const rangeRect =
     range && range[1] > range[0]
       ? {
@@ -122,6 +134,7 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
     <div className="trend qh-history-trend">
       <div className="trend-head">
         <button type="button" className="btn ghost" aria-pressed={dynamic} onClick={() => setDynamic(v => !v)}>{dynamic ? "动态回放 · 16桶" : "全段静态比较"}</button>
+        {!empty ? <span className="trend-window">{points[windowStart]?.label}–{points[windowEnd - 1]?.label} · {visibleCount} 桶</span> : null}
         <span>
           {unit} · {metricLabel}
         </span>
@@ -165,6 +178,12 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
             y2={padding.top + plotH}
             stroke="var(--border)"
           />
+          {[0.5, 1].map((f) => (
+            <g key={f} className="trend-grid">
+              <line x1={padding.left} y1={padding.top + plotH * (1 - f)} x2={padding.left + plotW} y2={padding.top + plotH * (1 - f)} stroke="var(--border)" opacity={0.45} />
+              <text x={4} y={padding.top + plotH * (1 - f) + 3} fontSize="9" fill="var(--muted)">{(max * f).toFixed(1)}</text>
+            </g>
+          ))}
 
           {rangeRect ? (
             <rect
@@ -212,7 +231,7 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
                     height={Math.max(h, 0)}
                     style={{ x, y, width:barW, height:Math.max(h,0) } as CSSProperties}
                     fill={GRADE_COLOR[p.grade]}
-                    opacity={0.85}
+                    opacity={0.38}
                   >
                     <title>
                       {p.label}：{objectLabel ? `${objectLabel} · ` : ''}{p.value.toFixed(2)} {unit}（{GRADE_LABEL[p.grade]}）
@@ -235,6 +254,10 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
             )
           })}
 
+          {curveD ? (
+            <path className="trend-curve" d={curveD} fill="none" stroke="var(--brand)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+          ) : null}
+
           <line
             className="obs-marker"
             x1={obsX}
@@ -252,9 +275,6 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
             />
           ) : null}
 
-          <text x={4} y={padding.top + 8} fontSize="10" fill="var(--muted)">
-            {max.toFixed(1)}
-          </text>
           <text x={4} y={padding.top + plotH} fontSize="10" fill="var(--muted)">
             0
           </text>

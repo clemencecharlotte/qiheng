@@ -251,13 +251,12 @@ describe('页面渲染冒烟', () => {
         onJump={() => {}}
       />,
     )
-    expect(html).toContain('可信问答')
+    expect(html).toContain('进入智能体聊天')
     expect(html).toContain('多角色视图')
     expect(html).toContain('导出 JSON')
-    // r42 收束：常驻 3 步演示面板已删；助手默认面 = 问答 + 一处连接状态 + 空态预设一次。
+    // r42 收束：常驻 3 步演示面板已删；r44 E：聊天移至智能体工作区，记录页保留深区与入口。
     expect(html).not.toContain('3 步演示')
-    expect(html).toMatch(/模型未连接 · 确定性解释|模型润色可用/)
-    expect(html).toContain('预设问题')
+    expect(html).not.toContain('预设问题')
     expect(html).toContain('本地演示记录，非生产审计存证')
   })
 

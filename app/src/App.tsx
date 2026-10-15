@@ -1364,21 +1364,22 @@ export default function App() {
   const gData = sampleGlass(glassIntensity, 'data')
   const appearanceVars = {
     '--cg-blur': `${gCard.blur}px`,
-    '--cg-fill-a': String(gCard.fillAlpha),
+    // r44 B · 消费者按小数（*100%）读取：此处统一 /100，修复百分比被 color-mix 钳成实底。
+    '--cg-fill-a': String(gCard.fillAlpha / 100),
     '--cg-edge': String(gCard.edge),
     '--cg-gloss': String(gCard.gloss),
     '--cg-shadow': String(gCard.shadow),
     '--cg-btn-blur': `${gBtn.blur}px`,
-    '--cg-btn-fill-a': String(gBtn.fillAlpha),
+    '--cg-btn-fill-a': String(gBtn.fillAlpha / 100),
     '--cg-overlay-blur': `${gOverlay.blur}px`,
-    '--cg-overlay-fill-a': String(gOverlay.fillAlpha),
+    '--cg-overlay-fill-a': String(gOverlay.fillAlpha / 100),
     '--cg-data-blur': `${gData.blur}px`,
-    '--cg-data-fill-a': String(gData.fillAlpha),
+    '--cg-data-fill-a': String(gData.fillAlpha / 100),
     // 兼容既有 liquid-glass token（面板=card）
     '--qh-glass-blur': `${gCard.blur}px`,
     '--qh-glass-sat': '140%',
-    '--qh-glass-fill': String(gCard.fillAlpha),
-    '--qh-glass-btn-fill': String(gBtn.fillAlpha),
+    '--qh-glass-fill': String(gCard.fillAlpha / 100),
+    '--qh-glass-btn-fill': String(gBtn.fillAlpha / 100),
     '--qh-glass-edge': String(gCard.edge),
     '--qh-glass-gloss': String(gCard.gloss),
     '--qh-glass-shadow': String(gCard.shadow),
@@ -1525,7 +1526,8 @@ export default function App() {
       </aside>
 
       <div className="app-body" ref={bodyRef}>
-        <header className="app-topbar u-pm u-pm-glass" data-topbar-open={topbarOpen ? '1' : '0'}>
+        <header className="ws-head u-pm u-pm-glass" data-topbar-open={topbarOpen ? '1' : '0'}>
+        <div className="app-topbar ws-head-row1">
           <button
             type="button"
             ref={railTriggerRef}
@@ -1596,9 +1598,10 @@ export default function App() {
               游客 / 账号
             </button>
           </div>
-        </header>
+        </div>
 
-        <nav className="sub-nav" aria-label={`${TOP_LABEL[route.top]}子页`}>
+        {subs.length > 1 ? (
+        <nav className="sub-nav ws-head-row2" aria-label={`${TOP_LABEL[route.top]}子页`}>
           {subs.map((sub) => (
             <button
               type="button"
@@ -1613,6 +1616,8 @@ export default function App() {
             </button>
           ))}
         </nav>
+        ) : null}
+        </header>
 
         <main className="app-content">
           {hasKpiSource && route.top !== 'schedule' ? <div className="decision-actions"><button id="kpi-return-source" type="button" className="btn-secondary" onClick={goBack}>返回指标来源</button></div> : null}
@@ -1828,6 +1833,8 @@ export default function App() {
               onOpenPassport={(pid, originId) => navigate({ top: 'records', sub: 'audit', passportId: pid }, { originId })}
               onBack={goBackWithReturn}
               onOpenWindow={(source, a, b, originId) => navigate({ top: source === 'synthetic_history' ? 'history' : 'schedule', sub: source === 'synthetic_history' ? 'trend' : 'evidence', source: source === 'synthetic_history' ? 'history' : 'schedule', t: a, a, b }, { originId })}
+              view={qaView}
+              onViewChange={(v) => setQaView(v ? { input: v.input, answer: v.answer, runIdentity: runIdentityRef.current } : null)}
             />
           ) : null}
 
@@ -1857,8 +1864,6 @@ export default function App() {
               effectiveDecision={effectiveDecision}
               onAudit={recordAudit}
               onJump={jumpToEvidence}
-              qaView={qaView}
-              onQaViewChange={(v) => setQaView(v ? { input: v.input, answer: v.answer, runIdentity: runIdentityRef.current } : null)}
               passportId={route.passportId}
               returnSourceLabel={sourceReturnLabel ?? undefined}
               onReturnToSource={sourceReturnLabel ? goBackWithReturn : undefined}

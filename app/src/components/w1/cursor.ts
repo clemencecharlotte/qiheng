@@ -120,7 +120,11 @@ const GLOW_SELECTOR =
   '.qh-welcome .qh-hdr, .u-w1-natdemo, .topbar-modal, .u-dialog, ' +
   '.app-shell .plan-card, .app-shell .lab-card, .app-shell .kpi-card, ' +
   '.app-shell .chain-card, .app-shell .event-detail-card, .app-shell .qa-card, .app-shell .stage-card, ' +
-  '.qh-relations, .qh-data-ingress, .qh-gov-events'
+  '.qh-relations, .qh-data-ingress, .qh-gov-events, ' +
+  // r44 B · 外层卡同族光感：统一页头/设备面板/演示卡/成果与页脚卡
+  '.app-shell .ws-head, .qh-welcome .qh-device-panel, .qh-welcome .qh-demo-machine, ' +
+  '.qh-welcome .qh-proof-card, .qh-welcome .qh-passport-side, .qh-welcome .qh-cta-band, ' +
+  '.app-shell .chat-main, .app-shell .event-row'
 let litEl: HTMLElement | null = null
 let autoInstalled = false
 

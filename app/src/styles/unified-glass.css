@@ -51,7 +51,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(168deg, var(--lg-gloss, rgba(255, 255, 255, 0.26)) 0%, rgba(255, 255, 255, 0.03) 36%, transparent 62%);
+  background: linear-gradient(168deg, var(--lg-gloss, rgba(255, 255, 255, 0.10)) 0%, rgba(255, 255, 255, 0.03) 36%, transparent 62%);
 }
 /* L5 指针高光（跟随 --gx/--gy；由全局光学指针写入） */
 :is(
@@ -72,7 +72,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: radial-gradient(140px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss, rgba(255, 255, 255, 0.26)), transparent 62%);
+  background: radial-gradient(200px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss, rgba(255, 255, 255, 0.10)), transparent 62%);
   opacity: 0;
   transition: opacity 240ms ease;
 }
@@ -174,7 +174,7 @@
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  background: radial-gradient(110px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss, rgba(255, 255, 255, 0.26)), transparent 62%);
+  background: radial-gradient(200px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss, rgba(255, 255, 255, 0.10)), transparent 62%);
   opacity: 0;
   transition: opacity 200ms ease;
 }
@@ -232,7 +232,7 @@
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  background: radial-gradient(110px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss, rgba(255, 255, 255, 0.26)), transparent 62%);
+  background: radial-gradient(200px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss, rgba(255, 255, 255, 0.10)), transparent 62%);
   opacity: 0;
   transition: opacity 200ms ease;
 }
@@ -345,7 +345,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: radial-gradient(140px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss, rgba(255, 255, 255, 0.26)), transparent 62%);
+  background: radial-gradient(200px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss, rgba(255, 255, 255, 0.10)), transparent 62%);
   opacity: 0;
   transition: opacity 240ms ease;
 }
@@ -553,13 +553,13 @@
    日间 card≈88–96% / data≈96%+ / overlay≈94–98% 为**校准起点**（floor 变量，非全站硬值）；
    overlay 才升层；g0 无残余 blur + 实底。 */
 :root {
-  --lg-card-floor: 0.88;
-  --lg-card-blur-max: 8px;
+  --lg-card-floor: 0.60;
+  --lg-card-blur-max: 14px;
   --lg-data-floor: 0.96;
   --lg-overlay-floor: 0.94;
 }
 [data-theme='dark'] {
-  --lg-card-floor: 0.70;
+  --lg-card-floor: 0.50;
   --lg-data-floor: 0.90;
   --lg-overlay-floor: 0.88;
 }

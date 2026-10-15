@@ -143,7 +143,8 @@ export default function DeviceSystemExperience({ hostObservation, hostPlayback, 
       <div className="qh-device-panel">
         {hostObservation ? (
           <p className="qh-device-observ" data-testid="device-host-observation">
-            同源观察时刻 {hostObservation.label} · 来源 {hostObservation.source === 'schedule' ? '合成调度示例' : '合成回放夹具'}
+            {hostObservation.label} · {hostObservation.source === 'schedule' ? '合成示例' : '回放夹具'}
+            <details className="qh-note-details"><summary>来源</summary><p>同源观察时刻 {hostObservation.label}：来源{hostObservation.source === 'schedule' ? '合成调度示例' : '合成回放夹具'}，与控制台同一时刻。</p></details>
           </p>
         ) : null}
 

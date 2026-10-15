@@ -1,0 +1,150 @@
+/**
+ * A-10 · MAP 关系图 fit / 「来源与范围」弹层 / 未选节点可读下限。
+ * 只允许由 components/evidence/RelationEvidence.tsx import；不改共享 css。
+ *
+ * 作用域约定：
+ *   - 弹层触发器在 .qh-relations 内（两个宿主共用，故不依赖 .qrel-mapfit）；
+ *   - 弹层面板由 Popover portal 到 document.body，**不在** .qh-relations 子树内 → 用 .map-src-pop 根类；
+ *   - fit 后的可读下限与邻域强化只在 .qrel-mapfit（宿主显式开启 fitViewport）下生效，
+ *     未开启的宿主（如排程 evidence）表现逐像素不变。
+ * 圆角/描边节奏：外层 16 / 次级 12 / 控件 10，统一 1px 边框。
+ */
+
+.qh-relations {
+  --map-radius-ctl: var(--control-radius, 10px); /* 控件 10 */
+  --map-radius-sub: 12px;                        /* 次级 12 */
+  --map-border: 1px solid var(--border, #dbe3e6);
+}
+
+/* ── 来源与范围：触发器（替代原先的长串说明段落，占同一行位与下边距） ─────────── */
+.qh-relations .qrel-sourcerow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px;
+  min-width: 0;
+}
+/* 复用统一浮层原语的 44px 触达高度，只补 1px 边框 + 控件圆角，与 .qrel-chip 同语言。 */
+.qh-relations .qrel-sourcerow .disc-pop-trigger {
+  padding: 6px 14px;
+  border: var(--map-border);
+  border-radius: var(--map-radius-ctl, 10px);
+  background: color-mix(in srgb, var(--surface, #fff) 60%, transparent);
+  color: var(--text, #1b3038);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.qh-relations .qrel-sourcerow .disc-pop-trigger:hover {
+  border-color: var(--brand, #176b62);
+  color: var(--brand, #176b62);
+}
+.qh-relations .qrel-sourcerow .disc-pop-trigger[aria-expanded='true'] {
+  border-color: var(--brand, #176b62);
+  color: var(--brand, #176b62);
+  background: color-mix(in srgb, var(--brand, #176b62) 10%, transparent);
+}
+
+/* ── 来源与范围：弹层结构化清单（portal 到 body，故不挂在 .qh-relations 下） ────── */
+.map-src-pop {
+  --map-radius-sub: 12px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text, #1b3038);
+}
+/* 原长串说明原文保留（一字不丢），降为弹层导语。 */
+.map-src-pop .map-src-lead {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--muted, #576c74);
+  overflow-wrap: anywhere;
+}
+.map-src-pop .map-src-sec { min-width: 0; }
+.map-src-pop .map-src-sec h5 {
+  margin: 0 0 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text, #1b3038);
+}
+.map-src-pop ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.map-src-pop li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 7px;
+  align-items: start;
+}
+.map-src-pop .map-src-body { display: grid; gap: 1px; min-width: 0; }
+.map-src-pop .map-src-label { font-size: 12.5px; overflow-wrap: anywhere; }
+.map-src-pop .map-src-note {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted, #576c74);
+  overflow-wrap: anywhere;
+}
+.map-src-pop .map-src-flag {
+  justify-self: start;
+  margin-top: 1px;
+  padding: 1px 7px;
+  border: var(--map-border);
+  border-radius: 999px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--muted, #576c74);
+}
+.map-src-pop .map-src-flag.on {
+  color: var(--brand, #176b62);
+  border-color: color-mix(in srgb, var(--brand, #176b62) 45%, transparent);
+  background: color-mix(in srgb, var(--brand, #176b62) 8%, transparent);
+}
+/* 未核实示意：次级卡（12 圆角 / 1px 边框），提示语气但不喧宾夺主。 */
+.map-src-pop .map-src-unverified {
+  padding: 8px 10px;
+  border: var(--map-border);
+  border-radius: var(--map-radius-sub, 12px);
+  background: color-mix(in srgb, var(--warning, #b7791f) 6%, transparent);
+}
+.map-src-pop .map-src-unverified ul { gap: 6px; }
+.map-src-pop .map-src-unverified li { grid-template-columns: minmax(0, 1fr); }
+
+/* ── A-10 fit：未选节点可读下限（不再靠整块极低 opacity 制造聚焦） ───────────────
+   原 relationEvidence.css 把整个节点块压到 opacity:0.3（含文字）→ 近乎不可读。
+   现：节点块保持不透明，只用描边/底色降级；文字单独降到可读下限之上。
+   对比度（--text #1b3038 / --muted #576c74 over #fff）：
+     label 0.72 ≈ 5.8:1，meta 0.90 ≈ 4.6:1 —— 均 ≥ 0.55 下限且 ≥ 4.5:1。            */
+.qh-relations.qrel-mapfit {
+  --map-dim-text-a: 0.72;
+  --map-dim-meta-a: 0.9;
+  --map-dim-edge-a: 0.3;
+}
+.qh-relations.qrel-mapfit .qrel-canvas .qrel-gnode.dim {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--border, #dbe3e6) 72%, transparent);
+  background: color-mix(in srgb, var(--surface, #fff) 84%, transparent);
+  box-shadow: none;
+}
+.qh-relations.qrel-mapfit .qrel-canvas .qrel-gnode.dim .qrel-gnode-label {
+  opacity: var(--map-dim-text-a, 0.72);
+}
+.qh-relations.qrel-mapfit .qrel-canvas .qrel-gnode.dim .qrel-gnode-kind,
+.qh-relations.qrel-mapfit .qrel-canvas .qrel-gnode.dim .qrel-gnode-tag {
+  opacity: var(--map-dim-meta-a, 0.9);
+}
+/* 选中与邻域保持满强度：高亮不因可读性修复被削弱。 */
+.qh-relations.qrel-mapfit .qrel-canvas .qrel-gnode.on,
+.qh-relations.qrel-mapfit .qrel-canvas .qrel-gnode:not(.dim) {
+  opacity: 1;
+}
+/* 有选中时给邻域节点一道轻描边：聚焦靠「高亮邻域」而非「压暗其它」。 */
+.qh-relations.qrel-mapfit.qrel-has-sel .qrel-canvas .qrel-gnode:not(.dim):not(.on) {
+  border-color: color-mix(in srgb, var(--brand, #176b62) 34%, var(--border, #dbe3e6));
+}
+/* 边是非文字元素：保持明显从属但不消失（原 0.18 近乎不可见，结构读不出来）。 */
+.qh-relations.qrel-mapfit .qrel-canvas .qrel-gline.dim {
+  opacity: var(--map-dim-edge-a, 0.3);
+}

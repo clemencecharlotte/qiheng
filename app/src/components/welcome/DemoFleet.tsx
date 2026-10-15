@@ -31,23 +31,26 @@ function MachineCard({ item, value, moving, onUpdate, onInspect, renderGlyph }: 
       {value.state === 'fault' ? <span className="qh-fault-hint" role="note">故障停机构</span> : null}
       {value.state === 'loading' ? <span className="qh-pace-hint" role="note">2.6× 示意</span> : null}
     </div>
-    <div className="qh-machine-fields">
-      <label>外形 <select aria-label={`${item.type.name}演示实例${item.n}外形`} value={value.model}
-        onChange={e => onUpdate({ model: e.target.value as Setting['model'] })}>
-        <option value="standard">标准外形</option><option value="compact">紧凑外形</option>
-      </select></label>
-      <label>状态 <select aria-label={`${item.type.name}演示实例${item.n}状态`} value={value.state}
-        onChange={e => onUpdate({ state: e.target.value as FleetState })}>
-        {order.map(state => <option key={state} value={state}>{names[state]}</option>)}
-      </select></label>
-    </div>
     <div className="qh-machine-actions">
       <button type="button" role="switch" aria-checked={value.state === 'running'}
         aria-label={`${item.type.name}演示实例${item.n}开关`} onClick={() => onUpdate({ state: value.state === 'running' ? 'standby' : 'running' })}>
         {value.state === 'running' ? '关闭演示' : '开启演示'}</button>
-      {onInspect && <button type="button" onClick={() => onInspect(item.type.id, value.state)} aria-label={`${item.type.name}演示实例${item.n}类型资料`}>类型资料 ↗</button>}
+      <details className="qh-machine-detail qh-note-details">
+        <summary>外形 / 状态 / 资料</summary>
+        <div className="qh-machine-fields">
+          <label>外形 <select aria-label={`${item.type.name}演示实例${item.n}外形`} value={value.model}
+            onChange={e => onUpdate({ model: e.target.value as Setting['model'] })}>
+            <option value="standard">标准外形</option><option value="compact">紧凑外形</option>
+          </select></label>
+          <label>状态 <select aria-label={`${item.type.name}演示实例${item.n}状态`} value={value.state}
+            onChange={e => onUpdate({ state: e.target.value as FleetState })}>
+            {order.map(state => <option key={state} value={state}>{names[state]}</option>)}
+          </select></label>
+        </div>
+        {onInspect && <button type="button" onClick={() => onInspect(item.type.id, value.state)} aria-label={`${item.type.name}演示实例${item.n}类型资料`}>类型资料 ↗</button>}
+        <small className="qh-machine-id">{item.id} · 非工业对象 ID（demo）</small>
+      </details>
     </div>
-    <details className="qh-machine-detail"><summary>实例详情</summary><small className="qh-machine-id">{item.id} · 非工业对象 ID（demo）</small></details>
   </article>
 }
 

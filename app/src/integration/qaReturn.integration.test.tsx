@@ -28,7 +28,7 @@ const tick = async () => { await act(async () => { await new Promise((r) => setT
 
 beforeEach(() => {
   stubMatchMedia()
-  window.location.hash = '#/records/audit?mode=legacy&scenario=normal'
+  window.location.hash = '#/agent?mode=legacy&scenario=normal'
   window.localStorage.clear()
   host = document.createElement('div'); document.body.append(host); root = createRoot(host)
 })
@@ -38,7 +38,7 @@ it('QA 引用：显式返回恢复本次 QA 入口与已完成答案', async () 
   await act(async () => root.render(<App />))
   await tick()
   const ta = host.querySelector<HTMLTextAreaElement>('textarea')
-  expect(ta, 'records/audit 应渲染可信问答输入').not.toBeNull()
+  expect(ta, 'agent 聊天应渲染可信问答输入').not.toBeNull()
   if (!ta) throw new Error('missing QA textarea')
   await act(async () => {
     const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')!.set!

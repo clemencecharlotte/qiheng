@@ -21,17 +21,8 @@
   border: 1px solid var(--mr-border);
 }
 
-/* 数据密集读区更实：面板正文/表格/图表容器不各自硬 blur（统一由数据角色决定） */
-:where(.app-shell .panel, .app-shell .table-wrap, .trend-svg) {
-  border-radius: var(--mr-radius-card);
-}
-
-/* 标签：统一描边/圆角（同级不再各自硬阴影） */
-:where(.tag, .topbar-status-chip) {
-  border-radius: var(--mr-radius-ctl);
-  border: 1px solid var(--mr-border);
-  box-shadow: none;
-}
+/* r40 ④·2：原 :where() 零特异度的 panel/table/trend-svg 圆角与 tag 描边规则为死代码
+   （实际圆角/描边由下方三分类消费者规则与 unified-shell/styles/product-geometry 决定），已删除。 */
 
 /* 输入控件：统一描边/圆角/焦点环（实底数据面，日间可读优先） */
 :where(.app-shell, .qh-welcome) :where(input:not([type='range']):not([type='checkbox']):not([type='radio']), select, textarea) {
@@ -59,7 +50,7 @@
   --material-control-fill: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-btn-fill-a, .9), .86) * 100%), transparent);
   --material-control-filter: blur(min(var(--cg-btn-blur, 0px), 6px)) saturate(130%);
   --material-control-shadow: inset 0 1px 0 rgb(255 255 255 / var(--cg-gloss, 0)), 0 2px 6px rgb(0 0 0 / calc(min(2, var(--cg-shadow, 0)) * .035));
-  --material-decor-fill: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-fill-a, .8), .68) * 100%), transparent);
+  --material-decor-fill: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-fill-a, .8), .5) * 100%), transparent);
   --material-decor-filter: blur(var(--cg-blur, 0px)) saturate(140%);
 }
 /* Three-class consumers beat old panel rules without !important. */

@@ -39,6 +39,12 @@ const PRINCIPLE_LABELS: Record<string, string[]> = {
   valve: ['球阀阀芯开度', '开度→示意流量', '支路路径高亮'],
 }
 
+/** r44 D · 外观模式机构剖视窗放大倍率：让"机身对应机构"在默认卡片尺寸下可感知（窗仍落在机身内）。 */
+const MECH_SCALE: Record<string, number> = {
+  screw: 2.2, centrifugal: 2.0, piston: 2.0, tank: 1.8,
+  dryer: 2.0, adsorber: 1.8, filter: 2.0, valve: 2.0,
+}
+
 const dash = (flow: number, len: number) => ({ strokeDasharray: `${(len / 6).toFixed(1)} ${(len / 9).toFixed(1)}`, strokeDashoffset: (-flow * len).toFixed(1) })
 
 function ScrewMech(p: ScrewPose): ReactNode {
@@ -233,10 +239,10 @@ export default function DeviceArtwork({ typeId, phase = 0, mode = 'shell' }: { t
   if (mode === 'principle') {
     return <span className={`qh-device-art art-${typeId} is-principle`}>
       <svg viewBox="0 0 220 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-        <g className="qh-mech principle" transform="translate(110 66) scale(1.55)">{mechFor(typeId, t)}</g>
+        <g className="qh-mech principle" transform="translate(110 62) scale(1.9)">{mechFor(typeId, t)}</g>
         <g className="mech-labels">
           {(PRINCIPLE_LABELS[typeId] ?? []).map((s, i) => (
-            <text key={s} className="mech-label" x="12" y={118 + i * 11}>{s}</text>
+            <text key={s} className="mech-label" x="12" y={124 + i * 11}>{s}</text>
           ))}
         </g>
         <text className="mech-phase" x="208" y="16" textAnchor="end">{phaseNote(typeId, t)}</text>
@@ -249,7 +255,7 @@ export default function DeviceArtwork({ typeId, phase = 0, mode = 'shell' }: { t
       <defs><clipPath id={clip}><rect x={f[0]} y={f[1]} width={f[2]} height={f[3]} /></clipPath></defs>
       <g transform={`translate(${(-resid[0]).toFixed(2)} ${(-resid[1]).toFixed(2)})`}>
         <g clipPath={`url(#${clip})`}><image href="/assets/devices/device-family-r01.png" width="1774" height="887" /></g>
-        <g className="qh-mech" transform={`translate(${anchor[0]} ${anchor[1]})`}>{mechFor(typeId, t)}</g>
+        <g className="qh-mech qh-mech-shell" transform={`translate(${anchor[0]} ${anchor[1]}) scale(${MECH_SCALE[typeId] ?? 2})`}>{mechFor(typeId, t)}</g>
       </g>
     </svg>
   </span>

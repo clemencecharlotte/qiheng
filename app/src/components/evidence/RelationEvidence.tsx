@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { consoleDataBus } from '../../integration/consoleDataBus'
 import {
   buildRelations,
@@ -14,7 +14,11 @@ import {
   type RelationNode,
 } from '../../integration/relations'
 import NoteRef from '../console/NoteRef'
+import { Popover } from '../ui/Disclosure'
+import { fitGraphLayout } from './mapFitLayout'
 import './relationEvidence.css'
+// A-10 · MAP fit 画布 / 来源与范围弹层 / 未选节点可读下限。仅本组件 import，不改共享 css。
+import '../../styles/map-fit.css'
 
 /**
  * M19 · R6 关联证据（首落 schedule/evidence）。
@@ -44,6 +48,7 @@ export default function RelationEvidence({
   domain,
   depth: depthProp,
   onDepthChange,
+  fitViewport,
 }: {
   onOpenBatch?: (batchId: string) => void
   onOpenEvent?: (eventId: string) => void
@@ -64,6 +69,12 @@ export default function RelationEvidence({
   /** M25 r05 ② · 受控邻域深度（宿主管理，供返回快照捕获/恢复）。 */
   depth?: 1 | 2
   onDepthChange?: (d: 1 | 2) => void
+  /**
+   * A-10 · MAP 视图 fit（默认关；未开启的宿主表现逐像素不变）。
+   * 把只读布局的列/行序归一到实测画布宽度（首列贴左边距、末列右沿贴右边距），消除
+   * 「节点堆在左侧、右侧大片空白」；同时启用未选节点文字可读下限（不再整块 opacity 0.3）。
+   */
+  fitViewport?: boolean
 }) {
   const snap = useSyncExternalStore(consoleDataBus.subscribe, consoleDataBus.get, () => null)
   const [filterLocal, setFilterLocal] = useState<'all' | RelationKind>('all')
@@ -82,6 +93,25 @@ export default function RelationEvidence({
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
     if (window.matchMedia('(min-width: 900px)').matches) setView('graph')
   }, [])
+
+  // A-10 · 实测图容器宽度（fit 归一化输入）。仅在图视图下挂载 ref，故依赖 view；
+  // 无 ResizeObserver 时退回一次性 clientWidth；宽为 0（SSR/jsdom 未布局）→ fit 原样返回基础布局。
+  const graphWrapRef = useRef<HTMLDivElement | null>(null)
+  const [canvasW, setCanvasW] = useState(0)
+  useEffect(() => {
+    if (!fitViewport) return
+    const el = graphWrapRef.current
+    if (!el) return
+    const measure = () => {
+      const w = el.clientWidth
+      setCanvasW((prev) => (prev === w ? prev : w))
+    }
+    if (typeof ResizeObserver === 'undefined') { measure(); return }
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    measure()
+    return () => ro.disconnect()
+  }, [fitViewport, view])
 
   const graph = useMemo(() => {
     if (!snap) return { nodes: [], edges: [], total: 0, truncated: false }
@@ -118,7 +148,10 @@ export default function RelationEvidence({
   const sel = selected ? graph.nodes.find((n) => n.id === selected) ?? null : null
   const neigh = sel ? neighborsOf(graph, sel.id, depth) : null
   const selEdges = sel ? visibleEdges.filter((e) => e.from === sel.id || e.to === sel.id) : []
-  const layout = layoutRelations(visibleGraph)
+  // A-10 · fit：先取只读确定性布局（列=类型序，行=同类内真实序），再按实测画布宽归一化列间距。
+  // fitViewport 未开启或宽度未测量时 fitGraphLayout 原样返回基础布局 → 既有宿主/SSR/jsdom 行为不变。
+  const baseLayout = layoutRelations(visibleGraph)
+  const layout = fitViewport ? fitGraphLayout(baseLayout, { viewportWidth: canvasW }) : baseLayout
   const labelOf = (id: string) => graph.nodes.find((n) => n.id === id)?.label ?? id
   const dimNode = (id: string) => !!neigh && !neigh.has(id)
   const dimEdge = (from: string, to: string) => !!neigh && !(neigh.has(from) && neigh.has(to))
@@ -138,7 +171,7 @@ export default function RelationEvidence({
   const domainAvail = DOMAIN_KIND_COVERAGE.filter((c) => c.available).map((c) => c.label).join(' / ')
 
   return (
-    <section className="qh-relations" aria-label="关联证据">
+    <section className={`qh-relations${fitViewport ? ' qrel-mapfit' : ''}`} aria-label="关联证据">
       <header className="qrel-hd">
         <h3>关联证据（只读）</h3>
         <span className="qrel-count" data-testid="relations-count">
@@ -146,9 +179,57 @@ export default function RelationEvidence({
         </span>
       </header>
 
-      <p className="qrel-coverage" data-testid="relations-coverage">
-        只读 API：{apiAvail}｜域内合成：{domainAvail}
-      </p>
+      {/* A-10 · 长串来源说明收进「来源与范围」按钮：复用统一解释浮层原语 Popover（真实 button →
+          Enter/Space 可开、Esc 关闭并回焦触发器、点击/触屏固定、外点关闭、flip/clamp 不出屏）。
+          原文案一字不丢（map-src-lead），另展开为结构化分源清单，并保留「示意管网未核实」等
+          未核实事实说明——诚实口径不因收纳而消失。 */}
+      <div className="qrel-sourcerow">
+        <Popover
+          label="来源与范围"
+          ariaLabel="来源与范围：只读 API 与域内合成分源、覆盖口径与未核实示意说明"
+          triggerId="relations-source-scope"
+        >
+          <div className="map-src-pop" data-testid="relations-coverage">
+            <p className="map-src-lead">只读 API：{apiAvail}｜域内合成：{domainAvail}</p>
+            <section className="map-src-sec">
+              <h5>只读 API（真实来源，非合成）</h5>
+              <ul>
+                {RELATION_KIND_COVERAGE.map((c) => (
+                  <li key={`api-${c.kind}`}>
+                    <span className={`map-src-flag${c.available ? ' on' : ' off'}`}>{c.available ? '已接入' : '未生成'}</span>
+                    <span className="map-src-body">
+                      <span className="map-src-label">{c.label}</span>
+                      <span className="map-src-note">{c.note}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section className="map-src-sec">
+              <h5>域内合成（宿主 run 只读派生，非只读 API）</h5>
+              <ul>
+                {DOMAIN_KIND_COVERAGE.map((c) => (
+                  <li key={`dom-${c.kind}`}>
+                    <span className={`map-src-flag${c.available ? ' on' : ' off'}`}>{c.available ? '已生成' : '未生成'}</span>
+                    <span className="map-src-body">
+                      <span className="map-src-label">{c.label}</span>
+                      <span className="map-src-note">{c.note}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section className="map-src-sec map-src-unverified">
+              <h5>未核实（示意，不作现场结论）</h5>
+              <ul>
+                <li>母管/支路与设备间管网连接为示意（未核实），非现场地理或工艺拓扑。</li>
+                <li>边仅来自已存 ID 引用（sourceId / batchId / eventId / unitId / passportId）；无证据不连、不造推测边、不造在线事件、不造第三层 URL。</li>
+                <li>域内合成对象（设备资格 / 候选 / 独立复验 / 安全审查）是只读派生结论，不等于只读 API 事实；安全审查可进入人工批准，非已批准。</li>
+              </ul>
+            </section>
+          </div>
+        </Popover>
+      </div>
 
       <div className="qrel-filters" role="group" aria-label="对象类型筛选">
         {FILTER_KINDS.map((k) => (
@@ -182,10 +263,18 @@ export default function RelationEvidence({
           </div>
 
           {view === 'graph' ? (
-            <div className="qrel-graphwrap" data-testid="relations-graphwrap">
+            <div className="qrel-graphwrap" data-testid="relations-graphwrap" ref={graphWrapRef}>
               <div className="qrel-graph" data-testid="relations-graph">
                 <div className="qrel-canvas" style={{ width: layout.width, height: layout.height }}>
-                  <svg className="qrel-gsvg" width={layout.width} height={layout.height} aria-hidden="true">
+                  {/* A-10 · viewBox 与像素尺寸同源（1:1，非 CSS transform 补丁）：边线跟随 fit 后的节点坐标。 */}
+                  <svg
+                    className="qrel-gsvg"
+                    width={layout.width}
+                    height={layout.height}
+                    viewBox={`0 0 ${Math.max(1, layout.width)} ${Math.max(1, layout.height)}`}
+                    preserveAspectRatio="xMinYMin meet"
+                    aria-hidden="true"
+                  >
                     {visibleEdges.map((e) => {
                       const a = layout.positions[e.from]
                       const b = layout.positions[e.to]

@@ -128,7 +128,8 @@ export default function QaPanel({
 
       {answer ? null : (
         <div className="qa-presets" role="group" aria-label="预设问题">
-          {PRESET_QUESTIONS.slice(0, 4).map((q) => (
+          <p className="qa-ask">你想了解哪个设备或方案？</p>
+          {PRESET_QUESTIONS.slice(0, 3).map((q) => (
             <button
               type="button"
               key={q.intent}

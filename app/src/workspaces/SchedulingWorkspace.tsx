@@ -273,13 +273,13 @@ export default function SchedulingWorkspace({
   const modeControls = (
     <div className="source-bar-controls" role="group" aria-label="示例与方案比较">
       <label className="field">
-        <span>来源模式</span>
+        <span>数据来源</span>
         <select
           value={mode}
           onChange={(e) => onModeChange(e.target.value as 'legacy' | 'lab')}
         >
-          <option value="legacy">旧版示例</option>
-          <option value="lab">方案比较</option>
+          <option value="legacy">合成示例</option>
+          <option value="lab">方案比较（实验夹具）</option>
         </select>
       </label>
       {lab ? (
@@ -408,9 +408,8 @@ export default function SchedulingWorkspace({
                   {/* M24 A1：页名权威=顶栏 H1；本卡只留主结论标题。 */}
                   <h3>当前结论与下一动作</h3>
                 </div>
-                <span className={`tag ${approvable ? 'ok' : 'bad'}`}>
-                  {approvable ? '可进入复验人审' : '安全阻断：不可批准'}
-                </span>
+                {/* r44 A-09：复验状态只在来源/控制区显示一次；卡内仅保留阻断态与动作。 */}
+                {approvable ? null : <span className="tag bad">安全阻断：不可批准</span>}
               </div>
               <dl className="console-decision-brief__facts">
                 <div><dt>当前输入</dt><dd>{scenarioLabel}</dd></div>

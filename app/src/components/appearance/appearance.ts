@@ -132,12 +132,12 @@ export interface GlassMaterial {
   shadow: number      // 阴影强度 0..1
 }
 const GLASS_ANCHORS: Array<{ g: number } & GlassMaterial> = [
+  // r44 B · 外层卡光学曲线（设计起始值，六环境实看可调）：0/25/50/75/100%
   { g: 0, blur: 0, sat: 100, fillAlpha: 100, buttonAlpha: 100, edge: 0.10, gloss: 0.06, shadow: 0.10 },
-  { g: 0.2, blur: 4, sat: 108, fillAlpha: 96, buttonAlpha: 96, edge: 0.14, gloss: 0.12, shadow: 0.14 },
-  { g: 0.4, blur: 8, sat: 116, fillAlpha: 92, buttonAlpha: 92, edge: 0.17, gloss: 0.18, shadow: 0.18 },
-  { g: 0.6, blur: 12, sat: 128, fillAlpha: 86, buttonAlpha: 86, edge: 0.20, gloss: 0.24, shadow: 0.22 },
-  { g: 0.8, blur: 18, sat: 140, fillAlpha: 80, buttonAlpha: 80, edge: 0.23, gloss: 0.30, shadow: 0.26 },
-  { g: 1, blur: 26, sat: 155, fillAlpha: 74, buttonAlpha: 74, edge: 0.26, gloss: 0.36, shadow: 0.30 },
+  { g: 0.25, blur: 6, sat: 110, fillAlpha: 90, buttonAlpha: 94, edge: 0.14, gloss: 0.10, shadow: 0.14 },
+  { g: 0.5, blur: 12, sat: 125, fillAlpha: 76, buttonAlpha: 88, edge: 0.18, gloss: 0.12, shadow: 0.20 },
+  { g: 0.75, blur: 20, sat: 140, fillAlpha: 64, buttonAlpha: 82, edge: 0.22, gloss: 0.14, shadow: 0.26 },
+  { g: 1, blur: 26, sat: 155, fillAlpha: 54, buttonAlpha: 76, edge: 0.26, gloss: 0.16, shadow: 0.30 },
 ]
 export function glassMaterialAt(gRaw: number): GlassMaterial {
   const g = Math.min(1, Math.max(0, Number.isFinite(gRaw) ? gRaw : 0))

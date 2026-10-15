@@ -64,7 +64,7 @@
   content: "";
   position: absolute; inset: 0;
   pointer-events: none;
-  background: radial-gradient(110px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss), transparent 62%);
+  background: radial-gradient(200px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss), transparent 62%);
   opacity: 0;
   transition: opacity 240ms ease;
 }
@@ -120,7 +120,7 @@
 .u-origin-trigger::after {
   content: "";
   position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(110px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss), transparent 62%);
+  background: radial-gradient(200px circle at var(--gx, 50%) var(--gy, 50%), var(--lg-gloss), transparent 62%);
   opacity: 0; transition: opacity 200ms ease;
 }
 .lg-btn:hover::after,
@@ -184,7 +184,7 @@
   --lg-alpha: calc(var(--qh-glass-fill, 0.62) * 100%);
   --lg-btn-alpha: calc(var(--qh-glass-btn-fill, 0.46) * 100%);
   --lg-edge: rgba(255, 255, 255, var(--qh-glass-edge, 0.20));
-  --lg-gloss: rgba(255, 255, 255, var(--qh-glass-gloss, 0.26));
+  --lg-gloss: rgba(255, 255, 255, var(--qh-glass-gloss, 0.10));
   /* M22 r02 · A2 阴影单位归一：B5 shadow 语义为层级 0–2（非 0–1 比例）。
      消费端按层级映射高度/偏移/blur/alpha 分离，合法克制曲线，不截成不透明黑。 */
   --lg-shadow-lvl: clamp(0, var(--cg-shadow, var(--qh-glass-shadow, 0.2)), 2);
@@ -201,7 +201,7 @@
 .u-origin-trigger {
   -webkit-backdrop-filter: blur(var(--cg-btn-blur, var(--qh-glass-blur, 8px))) saturate(140%);
   backdrop-filter: blur(var(--cg-btn-blur, var(--qh-glass-blur, 8px))) saturate(140%);
-  background: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-btn-fill-a, var(--qh-glass-btn-fill, var(--qh-glass-fill, 0.92))), 0.9) * 100%), transparent);
+  background: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-btn-fill-a, var(--qh-glass-btn-fill, var(--qh-glass-fill, 0.92))), 0.8) * 100%), transparent);
 }
 .appearance-scene-pop {
   -webkit-backdrop-filter: blur(var(--cg-overlay-blur, var(--qh-glass-blur, 12px))) saturate(140%);

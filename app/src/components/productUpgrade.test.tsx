@@ -8,6 +8,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { renderToStaticMarkup } from 'react-dom/server'
 import ConsoleTour from './ConsoleTour'
 import App from '../App'
+import ObservationTransport from './ObservationTransport'
 import SupplyDemandTrend from './SupplyDemandTrend'
 import HistoryTrend from './HistoryTrend'
 import { replayWindow } from './replayWindow'
@@ -16,7 +17,7 @@ import type { ObservationClockApi } from './useObservationClock'
 
 const api = (index: number) => ({ effectiveIndex:index, hoverIndex:null, range:null, state:{brushStart:null} } as ObservationClockApi)
 let root: Root | undefined
-afterEach(() => { if (root) { act(() => root!.unmount()); root = undefined }; document.body.innerHTML = ''; localStorage.removeItem('qiheng.console-tour.v1'); vi.restoreAllMocks() })
+afterEach(() => { if (root) { act(() => root!.unmount()); root = undefined }; document.body.innerHTML = ''; localStorage.removeItem('qiheng.console-tour.v1'); localStorage.removeItem('qiheng.tour.v3.schedule'); localStorage.removeItem('qiheng.tour.v3.map'); vi.restoreAllMocks() })
 describe('same-clock display projection', () => {
   it('never invents a prefix or combines loop laps', () => {
     expect(replayWindow(96,0,true)).toEqual([0,1])
@@ -60,7 +61,7 @@ describe('real Driver component lifecycle', () => {
   it('invites once, postpones without business-data side effects and supports replay', () => {
     localStorage.setItem('user-passports','untouched')
     mount()
-    const later=[...document.querySelectorAll('button')].find(b=>b.textContent==='稍后')!
+    const later=[...document.querySelectorAll('button')].find(b=>b.textContent==='跳过')!
     act(()=>later.click())
     expect(document.querySelector('.tour-invite')).toBeNull()
     expect(localStorage.getItem('user-passports')).toBe('untouched')
@@ -69,15 +70,15 @@ describe('real Driver component lifecycle', () => {
   })
   it('starts actual overlay and cleans it on route change', async () => {
     mount()
-    await act(async()=>{ [...document.querySelectorAll('button')].find(b=>b.textContent==='开始指引')!.click(); await new Promise(r=>setTimeout(r,20)) })
+    await act(async()=>{ [...document.querySelectorAll('button')].find(b=>b.textContent==='开始导览')!.click(); await new Promise(r=>setTimeout(r,20)) })
     expect(document.querySelector('.driver-overlay')).toBeTruthy()
-    expect(document.querySelector('.driver-popover-title')?.textContent).toBe('从工作区开始')
+    expect(document.querySelector('.driver-popover-title')?.textContent).toBe('工作区页头')
     act(()=>root!.render(<ConsoleTour routeKey="map/topology" />))
     expect(document.querySelector('.driver-overlay')).toBeNull()
   })
   it('cleans actual engine overlay on component unmount', async () => {
     mount()
-    await act(async()=>{ [...document.querySelectorAll('button')].find(b=>b.textContent==='开始指引')!.click(); await new Promise(r=>setTimeout(r,20)) })
+    await act(async()=>{ [...document.querySelectorAll('button')].find(b=>b.textContent==='开始导览')!.click(); await new Promise(r=>setTimeout(r,20)) })
     expect(document.querySelector('.driver-overlay')).toBeTruthy()
     act(()=>root!.unmount()); root=undefined
     expect(document.querySelector('.driver-overlay')).toBeNull()
@@ -96,7 +97,7 @@ describe('actual App tour integration', () => {
     await act(async()=>{ root!.render(<App />); await new Promise(r=>setTimeout(r,40)) })
     expect(document.querySelector('.app-shell')).toBeTruthy()
     expect(document.querySelector('.tour-invite')).toBeTruthy()
-    act(()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='稍后')!.click())
+    act(()=>[...document.querySelectorAll('button')].find(b=>b.textContent==='跳过')!.click())
     act(()=>root!.unmount()); root=createRoot(document.getElementById('test-root')!)
     await act(async()=>{ root!.render(<App />); await new Promise(r=>setTimeout(r,40)) })
     expect(document.querySelector('.tour-invite')).toBeNull()
@@ -117,5 +118,19 @@ describe('saved ranges do not turn dynamic replay off',()=>{
   const points=Array.from({length:32},(_,i)=>({label:String(i),value:i+1,grade:'pass' as const}))
   const html=(i:number)=>renderToStaticMarkup(<HistoryTrend points={points} unit="kWh" metricLabel="能量" api={{...api(i),range:[0,3]} as ObservationClockApi}/>)
   expect(html(20).match(/height="[\d.]+"/g)).not.toEqual(html(21).match(/height="[\d.]+"/g))
+ })
+})
+
+
+describe('explicit follow playback action',()=>{
+ it('does not start a visually frozen locked preview',()=>{
+  Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true})
+  document.body.innerHTML='<div id="test-root"></div>';root=createRoot(document.getElementById('test-root')!)
+  const follow=vi.fn(),toggle=vi.fn()
+  const clock={sourceId:'synthetic_schedule',startMinute:0,stepMinutes:15,count:96}
+  const contract={...api(48),clock,locked:true,newBuckets:0,observationLabel:'12:00',looping:true,setLooping:()=>{},state:{playing:false,speed:1,brushStart:null},follow,toggle} as unknown as ObservationClockApi
+  act(()=>root!.render(<ObservationTransport api={contract} sourceLabel="调度" onFullWindow={()=>{}} onLastHour={()=>{}} rangeSummary={null} outOfRange={null}/>))
+  const play=document.querySelector<HTMLButtonElement>('.transport-play')!
+  expect(play.textContent).toBe('跟随播放');act(()=>play.click());expect(follow).toHaveBeenCalledTimes(1);expect(toggle).toHaveBeenCalledTimes(1)
  })
 })

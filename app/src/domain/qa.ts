@@ -57,11 +57,12 @@ export interface QaAnswerDraft {
 }
 
 export const PRESET_QUESTIONS: Array<{ intent: QaIntent; label: string }> = [
+  // r44 E · 空态仅 3 条真实可执行建议：复验结论 / 只读边界 / 回放口径优先。
   { intent: 'why_recommendation', label: '为什么当前调度建议通过复验、允许进入人工评审？' },
-  { intent: 'baseline_delta', label: '与同条件基线相比，当前调度建议的变化及代价？' },
-  { intent: 'period_anomaly', label: '调度第 40 时段的异常与约束依据？' },
   { intent: 'unit_readonly', label: 'AC-03 为什么只读 / 不能调度？' },
   { intent: 'history_energy', label: '回放 C-01 09:30 的能量积分口径与缺口？' },
+  { intent: 'baseline_delta', label: '与同条件基线相比，当前调度建议的变化及代价？' },
+  { intent: 'period_anomaly', label: '调度第 40 时段的异常与约束依据？' },
   { intent: 'unsupported', label: '能节能多少 / 指标是否达标 / 能否现在启动机组？' },
 ]
 

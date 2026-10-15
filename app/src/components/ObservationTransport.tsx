@@ -66,9 +66,9 @@ export default function ObservationTransport({
           type="button"
           className="btn primary transport-play"
           aria-pressed={state.playing}
-          onClick={api.toggle}
+          onClick={() => { if (!state.playing && api.locked) api.follow(); api.toggle() }}
         >
-          {state.playing ? '暂停' : '播放'}
+          {state.playing ? '暂停' : api.locked ? '跟随播放' : '播放'}
         </button>
 
         <div className="transport-speed" role="group" aria-label="演示回放速度">
@@ -85,7 +85,7 @@ export default function ObservationTransport({
           ))}
         </div>
 
-        <label className="hint transport-loop"><input type="checkbox" checked={api.looping} onChange={(e) => api.setLooping(e.target.checked)} /> 循环播放（不合并跨圈累计）</label>
+        <label className="hint transport-loop"><input type="checkbox" checked={api.looping} onChange={(e) => api.setLooping(e.target.checked)} /> 循环播放</label>
         <span className="tag">来源：{sourceLabel}</span>
         {locked ? (
           <>
@@ -93,7 +93,7 @@ export default function ObservationTransport({
               已锁定 · 播放已前进 {newBuckets} 桶
             </span>
             <button type="button" className="btn ghost" onClick={api.follow}>
-              跟随播放
+              {state.playing ? '跟随播放' : '解除锁定'}
             </button>
           </>
         ) : (
@@ -194,10 +194,10 @@ export default function ObservationTransport({
       </label>
 
       {rangeSummary ? (
-        <div className="range-summary" role="status">
-          <strong>区间摘要</strong>
-          <span>{rangeSummary.note}</span>
-        </div>
+        <details className="range-summary qh-note-details">
+          <summary>区间摘要</summary>
+          <span role="status">{rangeSummary.note}</span>
+        </details>
       ) : null}
       {outOfRange ? (
         <div className="range-outside" role="status">
