@@ -21,3 +21,18 @@
 .qh-machine-detail .qh-machine-id { display: block; margin-top: 6px; color: var(--muted); }
 .qh-fleet-glyph { min-height: 150px; }
 .qh-fleet-glyph svg { width: 100%; height: 100%; }
+
+/* r45 A2 - device-section title block: no card, plain paragraph title on the curtain. */
+.qh-welcome .qh-flowval-top { background: transparent; border: 0; border-radius: 0; padding: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.qh-welcome .qh-flowval-top h2, .qh-welcome .qh-flowval-top .qh-eyebrow { text-shadow: 0 1px 8px rgb(0 0 0 / .35); }
+/* r45 A6 - footer: no card, one short line. */
+.qh-welcome .qh-ftr { border-top: 0; background: transparent; box-shadow: none; }
+.qh-welcome .qh-ftr-in { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 10px var(--w-gutter, 16px); min-height: 0; }
+/* r45 A4/A5 - removed sections leave no slot. */
+.qh-welcome .qh-bounds, .qh-welcome .qh-cta-sec { display: none; }
+
+/* r45 4 - rig default demo view sizing. */
+.qh-device-art.is-rig { display: block; width: 100%; height: 100%; }
+.qh-machine-rig { width: 100%; height: 100%; display: block; }
+.qh-fleet-glyph .qh-machine-rig { min-height: 150px; }
+.qh-device-orbit .qh-machine-rig { filter: drop-shadow(0 6px 14px rgb(0 0 0 / .35)); }

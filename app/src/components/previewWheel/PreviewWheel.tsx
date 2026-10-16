@@ -80,7 +80,7 @@ export function PreviewWheel({ items, label = '能力图册', initialId, onSelec
           const offset = wheelOffset(index, selected, items.length)
           const active = index === selected
           const hidden = Math.abs(offset) > 2
-          const style = { '--wheel-offset': offset, zIndex: 10 - Math.abs(offset), opacity: hidden ? 0 : active ? 1 : .65 } as CSSProperties
+          const style = { '--wheel-offset': offset, zIndex: 10 - Math.abs(offset), opacity: hidden ? 0 : active ? 1 : .85 } as CSSProperties
           return <div key={item.id} className="qh-wheel-slot" style={style} data-active={active} data-hidden={hidden}>
             <article id={`${prefix}-card-${index}`} role="tabpanel" aria-labelledby={`${prefix}-tab-${index}`} className="qh-wheel-card" aria-label={item.title} inert={!active} aria-hidden={!active}>
               <div className="qh-wheel-eyebrow">{item.eyebrow}</div><h4>{item.title}</h4>

@@ -91,8 +91,9 @@ export default function NarrativeSpine({ rootRef }: { rootRef: RefObject<HTMLEle
       const steps = Array.from(root.querySelectorAll<HTMLElement>('#qh-process .proc-steps > li'))
       const cue = root.querySelector<HTMLElement>('.qh-cue')
       const arrow = root.querySelector<HTMLElement>('.qh-cue-arrow')
-      const ctaRow = root.querySelector<HTMLElement>('.qh-cta-sec .qh-cta-row')
-      const cta = root.querySelector<HTMLElement>('.qh-cta-sec .qh-cta-row .btn')
+      // r45 A5 · 末尾 CTA 大卡删除后，引导线终点重锚到页脚（唯一剩余底部锚点），不留悬空线。
+      const ctaRow = root.querySelector<HTMLElement>('.qh-cta-sec .qh-cta-row') ?? root.querySelector<HTMLElement>('.qh-ftr-in')
+      const cta = root.querySelector<HTMLElement>('.qh-cta-sec .qh-cta-row .btn') ?? root.querySelector<HTMLElement>('.qh-ftr-in > span') ?? root.querySelector<HTMLElement>('.qh-ftr-in')
       if (!cue || !steps.length || !cta || !ctaRow) return
 
       svgEl.setAttribute('viewBox', `0 0 ${Math.round(mr.width)} ${Math.round(mr.height)}`)
@@ -245,8 +246,10 @@ export default function NarrativeSpine({ rootRef }: { rootRef: RefObject<HTMLEle
       }
       // 阅读线（局部坐标）= 滚动 + 视口 55% − main 顶。
       const localReadingY = (y + window.innerHeight * 0.55) - mainDocTop
-      const p = simplified ? 0 : spineProgressAt(spineSegs, localReadingY)
-      if (!simplified && progressLen > 0) {
+      // r40 ⑤·4：simplified（≤900px 或步骤<4）也走同一进度函数——build 已为其构造
+      // 直线 segs，右沿引导线在小屏同样随滚动可逆推进，而不是恒 0。
+      const p = spineProgressAt(spineSegs, localReadingY)
+      if (progressLen > 0) {
         prog.style.strokeDashoffset = String(progressLen * (1 - p))
       }
 
@@ -266,8 +269,8 @@ export default function NarrativeSpine({ rootRef }: { rootRef: RefObject<HTMLEle
       ns.forEach((g) => {
         const name = g.getAttribute('data-spine-node') || ''
         let on = false
-        if (simplified) on = false
-        else if (/^process-[1-4]$/.test(name)) on = ps ? Number(name.slice(8)) - 1 <= ps.idx : false
+        // r40 ⑤·4：simplified 下节点同样按 procState 点亮（原来恒灭）。
+        if (/^process-[1-4]$/.test(name)) on = ps ? Number(name.slice(8)) - 1 <= ps.idx : false
         else {
           const docY = nodeDocY[name]
           on = docY !== undefined && localReadingY >= docY - mainDocTop

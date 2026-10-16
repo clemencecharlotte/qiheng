@@ -144,3 +144,9 @@
 .app-shell .source-bar-controls .field > span { font-size: 12px; color: var(--muted); }
 /* r44 D: shell cutaway window reads as intentional viewport. */
 .qh-mech-shell .mech-window { fill: color-mix(in srgb, var(--surface) 55%, transparent); stroke: var(--brand); stroke-width: 1.2; }
+
+/* r45 6 - rail bottom tool row: environment + guide, one flex container, 44px targets. */
+.app-shell .rail-tools { display: flex; align-items: center; gap: 8px; padding: 4px 8px 10px; }
+.app-shell .rail-tool-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: var(--text); cursor: pointer; }
+.app-shell .rail-tool-btn:hover { border-color: var(--brand); color: var(--brand); }
+.app-shell .rail-tool-btn:focus-visible { outline: 2px solid var(--focus, var(--brand)); outline-offset: 2px; }

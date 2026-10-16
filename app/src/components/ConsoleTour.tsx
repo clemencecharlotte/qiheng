@@ -78,17 +78,16 @@ function stepsFor(routeKey: string): Step[] {
 const moduleOf = (routeKey: string) => routeKey.split('/')[0] || 'console'
 
 /** Mature Driver engine; no solver calls, route rewriting, or business-data writes. */
-export default function ConsoleTour({ routeKey, onRailChange }: { routeKey: string; onRailChange?: (open:boolean) => void }) {
+export default function ConsoleTour({ routeKey, onRailChange, guideNonce = 0 }: { routeKey: string; onRailChange?: (open:boolean) => void; guideNonce?: number }) {
   const mod = moduleOf(routeKey)
   const [invite, setInvite] = useState(() => firstVisit(mod))
   useEffect(() => { setInvite(firstVisit(moduleOf(routeKey))) }, [routeKey])
   const instance = useRef<Driver | null>(null)
   const origin = useRef<HTMLElement | null>(null)
-  const replay = useRef<HTMLButtonElement>(null)
   const pending = useRef(0)
   const GUIDE = stepsFor(routeKey)
   const start = () => {
-    origin.current = document.activeElement instanceof HTMLElement ? document.activeElement : replay.current
+    origin.current = document.activeElement instanceof HTMLElement ? document.activeElement : document.querySelector<HTMLElement>('[data-testid="rail-guide-btn"]')
     markSeen(mod); setInvite(false)
     instance.current?.destroy()
     const mobile = window.innerWidth <= 900
@@ -117,7 +116,7 @@ export default function ConsoleTour({ routeKey, onRailChange }: { routeKey: stri
         }
       }
       // A mobile drawer is not falsely highlighted offscreen. Teach at its actual trigger.
-      return document.querySelector<HTMLElement>(mobile ? '.rail-burger' : '.ws-head, .app-topbar') ?? replay.current!
+      return document.querySelector<HTMLElement>(mobile ? '.rail-burger' : '.ws-head, .app-topbar') ?? document.body
     }
     const steps: DriveStep[] = GUIDE.map(([selector, title, description]) => ({
       element: () => target(selector),
@@ -144,7 +143,7 @@ export default function ConsoleTour({ routeKey, onRailChange }: { routeKey: stri
         ++pending.current
         onRailChange?.(false)
         instance.current = null
-        const el = origin.current?.isConnected ? origin.current : replay.current
+        const el = origin.current?.isConnected ? origin.current : document.querySelector<HTMLElement>('[data-testid="rail-guide-btn"]')
         el?.focus({ preventScroll: true })
       },
     })
@@ -163,12 +162,16 @@ export default function ConsoleTour({ routeKey, onRailChange }: { routeKey: stri
     return () => { ++pending.current; document.removeEventListener('keydown', trap, true); instance.current?.destroy() }
   }, [])
   useEffect(() => { ++pending.current; instance.current?.destroy() }, [routeKey])
+  // r45 ⑥ · 单入口：左导航底部真实按钮触发（nonce>0 时重开当前模块导览）。
+  useEffect(() => {
+    if (guideNonce > 0) start()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guideNonce])
   return <>
     {invite && <aside className="tour-invite" aria-label="首次使用指引">
       <h2>欢迎来到{mod === 'welcome' ? '序幕' : '本工作区'}</h2><p>用一分钟了解这里能做什么与证据路径。</p>
       <div className="tour-invite-actions"><button className="btn primary" type="button" onClick={start}>开始导览</button>
         <button className="btn ghost" type="button" onClick={() => { markSeen(mod); setInvite(false) }}>跳过</button></div>
     </aside>}
-    <button className="btn ghost tour-replay" type="button" ref={replay} onClick={start}>指引</button>
   </>
 }

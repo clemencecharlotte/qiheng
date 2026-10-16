@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "979ddc88425479fcfdd2ff5e03250a527f89b927",
+  "sourceCommit": "1d5c84ee7ee63829d2f18aeade9b88cc6ae35c09",
   "scope": "Current app and services source snapshot; no private repository history, industrial originals, credentials, or personal screenshots.",
   "files": [
     {
@@ -79,8 +79,8 @@
     },
     {
       "path": "app/src/App.tsx",
-      "bytes": 86264,
-      "sha256": "4d43201cf142698bb2988304645e71c7329cf4b3e114d6e3f7590f91213645e4"
+      "bytes": 87416,
+      "sha256": "0c6d8eb4cf89551e692fea00426618e34aa7400caba9877b6cbcf8e01249af54"
     },
     {
       "path": "app/src/components/AppNav.css",
@@ -104,8 +104,8 @@
     },
     {
       "path": "app/src/components/ConsoleTour.tsx",
-      "bytes": 10092,
-      "sha256": "b197061ef37d1c3dfb5d8fbdd7b570e0c8b00858cd478e684fde257393a8bf44"
+      "bytes": 10320,
+      "sha256": "196db7b72834c46015067ce1281f0823a03c8d4b464c9b08aa42b8e7bac5ef1a"
     },
     {
       "path": "app/src/components/ConstraintPanel.tsx",
@@ -374,8 +374,8 @@
     },
     {
       "path": "app/src/components/WelcomePage.tsx",
-      "bytes": 27376,
-      "sha256": "0484d9f5316a3da499f81a024e7371e9025d04849932a6c9e0731837df34c45a"
+      "bytes": 25385,
+      "sha256": "5ecc882a7e9b5ee02ddc4fa89a45683cf96b04f750490bd9e9a88035732efdaa"
     },
     {
       "path": "app/src/components/appearance/AppearanceDock.test.tsx",
@@ -494,8 +494,8 @@
     },
     {
       "path": "app/src/components/console/NotesBar.tsx",
-      "bytes": 5275,
-      "sha256": "331754d0f386089ff6a767ba59e8a5b0153c13aaf111ecf1653e7dcc9df9edab"
+      "bytes": 5285,
+      "sha256": "c8d8e6b2e357926b83dd69adb254e62be4e96a279df63243cbac5b9bccac125f"
     },
     {
       "path": "app/src/components/console/Popover.test.tsx",
@@ -534,8 +534,8 @@
     },
     {
       "path": "app/src/components/console/notes.ts",
-      "bytes": 3768,
-      "sha256": "da6f49adf00aeaebb66ba4fa0d745c59477924eb404cf1f968a259d1fc73cb2b"
+      "bytes": 4020,
+      "sha256": "2020bdf7deaa9f08f2a2eaae8456609f82ab38eacf617c41d84250e7644ba320"
     },
     {
       "path": "app/src/components/console/statusBadge.css",
@@ -560,17 +560,17 @@
     {
       "path": "app/src/components/previewWheel/PreviewWheel.tsx",
       "bytes": 6307,
-      "sha256": "cd1455962bc9e0e4637684acd2a7ace39f2b0d55ffd5150d650e15bb0be3da97"
+      "sha256": "5334183d3c6449afa7b74b2fc9b6452133e0b7bfcba8e9a6bcf7f7918c8d3d2a"
     },
     {
       "path": "app/src/components/previewWheel/preview-wheel.css",
-      "bytes": 3047,
-      "sha256": "e4058728651347adbaf750b04e639b10e929872c2d28035a79672a7d020ed50b"
+      "bytes": 4782,
+      "sha256": "242e8e5eb9f86d2076095218dfc69c5e61fcaaea720e675337961ab433d851a0"
     },
     {
       "path": "app/src/components/productUpgrade.test.tsx",
-      "bytes": 8563,
-      "sha256": "09136e8d13d091904d442f2c6b398088eb23ba0c748bd6da9fd5dfd8d12bd030"
+      "bytes": 8702,
+      "sha256": "37401e0ecc975298e12d972cd5a5383917a35c64e59c02054b9c72429c445fd3"
     },
     {
       "path": "app/src/components/replayMode.test.ts",
@@ -904,13 +904,13 @@
     },
     {
       "path": "app/src/components/welcome/DeviceArtwork.tsx",
-      "bytes": 15487,
-      "sha256": "6502f88822bdf12a9b24af8b10b39af0479bbea7e701703cf6ea571717e1e6dd"
+      "bytes": 15849,
+      "sha256": "d17bde30562cd7192536ffabbbf41bfe2cef69e633f6f2d2291bef2b2295d467"
     },
     {
       "path": "app/src/components/welcome/DeviceSystemExperience.tsx",
-      "bytes": 20122,
-      "sha256": "d23176d8d32a9642bc69c1eec24a6c89ca7192de9ab978f6882d3c79a9079459"
+      "bytes": 20411,
+      "sha256": "2c436f382922a1a6fcc6115b4e38ce34975f62ee5e8e596353bb4bd1c64918b5"
     },
     {
       "path": "app/src/components/welcome/FlowShots.tsx",
@@ -919,8 +919,8 @@
     },
     {
       "path": "app/src/components/welcome/NarrativeSpine.tsx",
-      "bytes": 13448,
-      "sha256": "cd876f1457677b41a8f38e4278dfd1965a9172970fbc360acf37c50da95650fe"
+      "bytes": 13957,
+      "sha256": "21c9dd9f8cc0bf5d392a3e5ff53d59d26db5305ad634900596df1fc2779512dc"
     },
     {
       "path": "app/src/components/welcome/PassportProofRail.tsx",
@@ -949,8 +949,8 @@
     },
     {
       "path": "app/src/components/welcome/contentContracts.test.tsx",
-      "bytes": 4870,
-      "sha256": "8cc3e079915910d198940101cb7ce0988d86cb1405d6d794807927f1ff4bd665"
+      "bytes": 4912,
+      "sha256": "3abf00a5bcb7115e8f104fbe922f011692982268392eb3d6a773f7a36333e615"
     },
     {
       "path": "app/src/components/welcome/demo-fleet.css",
@@ -959,8 +959,8 @@
     },
     {
       "path": "app/src/components/welcome/deviceArtwork.test.tsx",
-      "bytes": 4940,
-      "sha256": "fd31400a8f6af8e5521818f41a0db8a8bfc8b7bb47cb649d437f7e60c392396a"
+      "bytes": 5669,
+      "sha256": "6543072306766afe703a86259c41041fa135da71a5a763e3d36fb1918c578796"
     },
     {
       "path": "app/src/components/welcome/deviceKinematics.test.ts",
@@ -994,8 +994,8 @@
     },
     {
       "path": "app/src/components/welcome/mechClock.ts",
-      "bytes": 3318,
-      "sha256": "8ec7ac68c317eb6b8eb2ae1275669943b80f6636cffb4bd697c3728d941cac93"
+      "bytes": 3838,
+      "sha256": "cef276995e1f432014ffcdbf5bec282f7bfb7dcd31dad66555a3dac96f654dab"
     },
     {
       "path": "app/src/components/welcome/mechSnapshot.test.tsx",
@@ -1629,8 +1629,8 @@
     },
     {
       "path": "app/src/styles/product-geometry.css",
-      "bytes": 11987,
-      "sha256": "dc47674518deeb4ae090682fbff8e828d5cf918e7304d3c2439106e9ecd5cec4"
+      "bytes": 12589,
+      "sha256": "52d4f24ef7040b39707bc0efc6c4be64454ea002a7c07355d0a52e8d86648215"
     },
     {
       "path": "app/src/styles/unified-glass.css",
@@ -1654,8 +1654,8 @@
     },
     {
       "path": "app/src/workspaces/AgentWorkspace.tsx",
-      "bytes": 23250,
-      "sha256": "b8830f8b82b61127a3c43f9bb3bf11ffe686b0a8a2a52d743f26ad1b8e0545b7"
+      "bytes": 20917,
+      "sha256": "b2dd891090f79959419e055f56caf4b10ac814a157f5c420a1f3e49079e099b5"
     },
     {
       "path": "app/src/workspaces/AssistantWorkspace.tsx",
@@ -1921,6 +1921,41 @@
       "path": "services/readonly-data/validate.py",
       "bytes": 5563,
       "sha256": "ae3114463a32ed07b42d14c743b39198b0d83085137e6b8515c048aa004ba139"
+    },
+    {
+      "path": "app/src/styles/console-tour.css",
+      "bytes": 994,
+      "sha256": "193bc920fb58fddf7cad69974e6d7037bf046c6811ce665501ccb067d427d5ae"
+    },
+    {
+      "path": "app/src/components/consoleTour.test.tsx",
+      "bytes": 2084,
+      "sha256": "2d145675147d00aaf7d059454b670c1d7d510e58dad9a4cf6b0323ca0c86a99c"
+    },
+    {
+      "path": "app/src/styles/r44-welcome.css",
+      "bytes": 2979,
+      "sha256": "ffd0debfa749a20a2eec5e6543ce7d8f3b49936d479f16ef17c865416fb16612"
+    },
+    {
+      "path": "app/src/components/welcome/machineRig.tsx",
+      "bytes": 16926,
+      "sha256": "e342f53327ae64372a004d92836d38827fce96d42920a36ac4b018139081cc01"
+    },
+    {
+      "path": "app/src/components/ChatConsole.tsx",
+      "bytes": 8642,
+      "sha256": "e0abe007402ed87bde8072639896e544cb1381bb973570e524b71b7967146ad0"
+    },
+    {
+      "path": "app/src/styles/agent-chat.css",
+      "bytes": 3240,
+      "sha256": "e810c781b5874466f816de994a79af8e7ea6848e9f05420c799d362cea2253a5"
+    },
+    {
+      "path": "app/src/surfaceRegistry.test.tsx",
+      "bytes": 11225,
+      "sha256": "8fff2dd562a04e5fda46d074a34122cd62616c98e5f1c2237dfd75ffacbbfb47"
     }
   ]
 }

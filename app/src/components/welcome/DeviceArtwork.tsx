@@ -4,6 +4,7 @@ import {
   type AdsorberPose, type CentrifugalPose, type DryerPose, type FilterPose,
   type PistonPose, type ScrewPose, type TankPose, type ValvePose,
 } from './deviceKinematics'
+import { MachineRig } from './machineRig'
 
 /** User-approved original AI artwork; generic structure, never a site/model identity. */
 /**
@@ -229,13 +230,19 @@ function phaseNote(typeId: string, t: number): string {
   }
 }
 
-export default function DeviceArtwork({ typeId, phase = 0, mode = 'shell' }: { typeId: string; phase?: number; mode?: 'shell' | 'principle' }) {
+export default function DeviceArtwork({ typeId, phase = 0, mode = 'rig' }: { typeId: string; phase?: number; mode?: 'rig' | 'shell' | 'principle' }) {
   const f = FRAMES[typeId] ?? FRAMES.screw
   const resid = RESID[typeId] ?? [0, 0]
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '')
   const clip = `device-art-${uid}`
   const anchor = ANCHORS[typeId] ?? ANCHORS.screw
   const t = phase
+  // r45 ④ · 默认演示 = 2.5D 分层机构 rig（连续运动）；shell=批准图集静态外观（次级）；principle=教育剖视示意。
+  if (mode === 'rig') {
+    return <span className={`qh-device-art art-${typeId} is-rig`}>
+      <MachineRig typeId={typeId} phase={t} uid={uid} />
+    </span>
+  }
   if (mode === 'principle') {
     return <span className={`qh-device-art art-${typeId} is-principle`}>
       <svg viewBox="0 0 220 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">

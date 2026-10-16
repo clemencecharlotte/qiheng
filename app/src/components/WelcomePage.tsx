@@ -445,39 +445,12 @@ export default function WelcomePage({ onEnter, onAuth, returning = false, sceneP
           </div>
         </section>
 
-        <ReversibleNudge ariaLabel="能力边界：可回看的上一条说明">
-        <section className="qh-bounds" id="qh-bounds">
-          <div className="qh-bounds-in">
-            <p className="qh-eyebrow rv">Capability bounds / 能力边界</p>
-            <h2 className="rv">边界，同样是能力。</h2>
-            <ul className="qh-proof-list rv" style={{ maxWidth: '60ch' }}>
-              <li title="不连接生产设备、不生成 PLC 程序、不替代现场操作规程"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg><span>不写 PLC</span></li>
-              <li title="喘振边界没有确认数据时，该机组不进入自动调度通道"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg><span>未知边界不自动调度</span></li>
-              <li title="当前能耗为显式功率模型推算；接入真值前一律标注未验证"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg><span>合成结果不称现场 KPI</span></li>
-            </ul>
-          </div>
-        </section>
-        </ReversibleNudge>
+        {/* r45 A4 · 边界大卡退出默认叙事：三条安全边界并入全局说明脚注（notes bounds）。 */}
 
-        <section className="qh-cta-sec qh-cta-end">
-          <div className="qh-cta-in">
-            <h2 className="rv">先看它怎么拒绝，再看它怎么推荐。</h2>
-            <p className="qh-lede rv">3 分钟看完一次可信调度。</p>
-            <div className="qh-cta-row rv">
-              <button type="button" className="btn primary" data-action="welcome-enter-demo" onClick={onEnter}>
-                进入评审演示
-              </button>
-              <a className="btn ghost" href="#/records/audit">
-                查看决策护照
-              </a>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className="qh-ftr">
         <div className="qh-ftr-in">
-          <p>视觉为抽象示意，非现场指令<NoteRef note="flow" /></p>
           <span>QIHENG · SYNTHETIC DEMO</span>
         </div>
       </footer>

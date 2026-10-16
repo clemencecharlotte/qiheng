@@ -9,7 +9,11 @@
 .tour-invite h2 { margin: 0 0 4px; font-size: 16px; }
 .tour-invite p { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
 .tour-invite-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.tour-replay { position: fixed; left: 12px; bottom: 12px; z-index: 65; }
+/* r45 ⑥ · 游离 fixed 入口已删除：指引按钮由左导航底部工具行（.rail-tools）单入口触发。 */
 @media (max-width: 640px) {
   .tour-invite { right: 8px; left: 8px; max-width: none; bottom: 64px; }
 }
+
+/* r45 fix - invite must never cover the chat composer send button. */
+.tour-invite { bottom: 196px; right: 16px; max-width: 380px; }
+@media (max-width: 640px) { .tour-invite { bottom: 216px; right: 8px; left: 8px; max-width: none; } }

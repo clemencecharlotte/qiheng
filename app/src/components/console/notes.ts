@@ -91,6 +91,12 @@ export const NOTES: Record<string, NoteDef> = {
     short: 'suffix 父保存屏障口径',
     text: 'suffix 重规划（原 B04d）：模块级 replanController + executionController 父保存屏障；Panel 仅视图。确认弹层捕获 suffixId/epoch/verification/revision/完整 snapshot，提交再核。',
   },
+  bounds: {
+    id: 'qh-note-bounds',
+    n: 13,
+    short: '能力边界',
+    text: '能力边界：不写 PLC 程序、不替代现场操作规程；喘振/启停边界未核实的机组不进入自动调度；合成结果不称现场 KPI。',
+  },
 }
 
 export type NoteKey = keyof typeof NOTES

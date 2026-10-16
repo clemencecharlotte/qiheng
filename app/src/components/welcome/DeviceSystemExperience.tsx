@@ -42,7 +42,7 @@ export const DEMO_DEVICE_TYPES: DeviceType[] = [
   { id: 'valve', name: '阀门/支路', tag: '管网', statusNote: '演示：开度对支路流量影响；为示意管网，未核。', boundary: 'unknown', boundaryNote: '管网未核：只读示意', sheet: ['形态：阀座 + 支路', '物理管网未核实'], realUnits: [] },
 ]
 
-export function DeviceGlyph({ id, phase = 0, mode = 'shell' }: { id: string; phase?: number; mode?: 'shell' | 'principle' }) {
+export function DeviceGlyph({ id, phase = 0, mode = 'rig' }: { id: string; phase?: number; mode?: 'rig' | 'shell' | 'principle' }) {
   return <DeviceArtwork typeId={id} phase={phase} mode={mode} />
 }
 
@@ -71,7 +71,7 @@ export default function DeviceSystemExperience({ hostObservation, hostPlayback, 
   const [selectedId, setSelectedId] = useState<string>(deviceView?.deviceId ?? DEMO_DEVICE_TYPES[0].id)
   // r41 · 主展示精选一台默认运行（明确演示、可暂停），让人一眼发现动效；入口快照优先。
   const [state, setState] = useState<DemoState>((deviceView?.demoState as DemoState) ?? 'running')
-  const [viewMode, setViewMode] = useState<'shell' | 'principle'>('shell')
+  const [viewMode, setViewMode] = useState<'rig' | 'shell' | 'principle'>('rig')
   // 入口快照恢复：deviceView 变化时同步选中/演示状态（不新增 store）。
   useEffect(() => {
     if (deviceView?.deviceId && DEMO_DEVICE_TYPES.some((t) => t.id === deviceView.deviceId)) setSelectedId(deviceView.deviceId)
@@ -148,13 +148,14 @@ export default function DeviceSystemExperience({ hostObservation, hostPlayback, 
           </p>
         ) : null}
 
-        <div ref={visualRef} className={`qh-device-orbit-wrap${unknown ? ' is-unknown' : ''}`} data-demo-state={state} data-device={selected.id}>
+        <div ref={visualRef} className={`qh-device-orbit-wrap${unknown ? ' is-unknown' : ''}`} data-demo-state={state} data-device={selected.id} data-clock={pb?.playing ? 'host' : 'presentation'}>
           <div className="qh-device-orbit" role="img"
-            aria-label={`${selected.name} 演示状态：${STATE_LABEL[state]}${viewMode === 'principle' ? ' · 原理剖视' : ' · 外观'}${unknown ? '；安全边界未知' : ''}`}>
+            aria-label={`${selected.name} 演示状态：${STATE_LABEL[state]}${viewMode === 'principle' ? ' · 原理剖视' : viewMode === 'shell' ? ' · 外观' : ' · 机构演示'}${unknown ? '；安全边界未知' : ''}`}>
             <DeviceGlyph id={selected.id} phase={stagePhase} mode={viewMode} />
           </div>
           <span className={`qh-device-pipe-node${pipelineOn ? ' on' : ''}${state === 'running' || nowRunning ? ' flow' : ''}`} aria-hidden="true" />
           <div className="qh-orbit-ctrl" role="group" aria-label="舞台视图与演示走带（仅展示）">
+            <button type="button" className={`qh-orbit-mode${viewMode === 'rig' ? ' on' : ''}`} aria-pressed={viewMode === 'rig'} onClick={() => setViewMode('rig')}>演示</button>
             <button type="button" className={`qh-orbit-mode${viewMode === 'shell' ? ' on' : ''}`} aria-pressed={viewMode === 'shell'} onClick={() => setViewMode('shell')}>外观</button>
             <button type="button" className={`qh-orbit-mode${viewMode === 'principle' ? ' on' : ''}`} aria-pressed={viewMode === 'principle'} onClick={() => setViewMode('principle')}>原理</button>
             <button type="button" className="btn ghost qh-orbit-play" aria-pressed={state === 'running'}

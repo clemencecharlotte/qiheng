@@ -27,7 +27,7 @@ const MECH_CONTRACT: Record<string, string[]> = {
 describe('r41 device artwork mechanism contract', () => {
   it('shell mode renders the approved atlas exactly once inside its measured frame clip', () => {
     for (const t of TYPES) {
-      const html = renderToStaticMarkup(<DeviceArtwork typeId={t} />)
+      const html = renderToStaticMarkup(<DeviceArtwork typeId={t} mode="shell" />)
       expect(html, `${t} atlas href`).toContain('/assets/devices/device-family-r01.png')
       expect(html.match(/device-family-r01\.png/g)?.length, `${t} atlas drawn once`).toBe(1)
       expect(html, `${t} type class`).toContain(`art-${t}`)
@@ -37,7 +37,7 @@ describe('r41 device artwork mechanism contract', () => {
   })
   it('each type carries its own real mechanism parts, not generic decoration', () => {
     for (const t of TYPES) {
-      const html = renderToStaticMarkup(<DeviceArtwork typeId={t} phase={1.3} />)
+      const html = renderToStaticMarkup(<DeviceArtwork typeId={t} phase={1.3} mode="shell" />)
       for (const cls of MECH_CONTRACT[t]) expect(html, `${t} missing ${cls}`).toContain(cls)
     }
   })
@@ -52,7 +52,7 @@ describe('r41 device artwork mechanism contract', () => {
   })
   it('centering contract: measured viewBox + meet + whole-group residual compensation', () => {
     for (const t of TYPES) {
-      const html = renderToStaticMarkup(<DeviceArtwork typeId={t} />)
+      const html = renderToStaticMarkup(<DeviceArtwork typeId={t} mode="shell" />)
       expect(html, `${t} viewBox`).toContain(`viewBox="${DEVICE_FRAMES_R41[t].join(' ')}"`)
       expect(html, `${t} preserveAspectRatio`).toContain('preserveAspectRatio="xMidYMid meet"')
       const [rx, ry] = DEVICE_RESID_R41[t]
@@ -70,21 +70,32 @@ describe('r41 device artwork mechanism contract', () => {
   })
   it('the pixel-crop moving layer (ghosting source) never returns', () => {
     for (const t of TYPES) {
-      const html = renderToStaticMarkup(<DeviceArtwork typeId={t} />)
+      const html = renderToStaticMarkup(<DeviceArtwork typeId={t} mode="shell" />)
       expect(html, `${t} pixel part`).not.toContain('art-mechanical-part')
       expect(html, `${t} nested svg crop`).not.toContain('<svg x=')
     }
   })
   it('two instances in one tree never share clip ids', () => {
-    const html = renderToStaticMarkup(<><DeviceArtwork typeId="tank" /><DeviceArtwork typeId="tank" /></>)
+    const html = renderToStaticMarkup(<><DeviceArtwork typeId="tank" mode="shell" /><DeviceArtwork typeId="tank" mode="shell" /></>)
     const ids = [...html.matchAll(/id="([^"]+)"/g)].map((m) => m[1])
     expect(ids.length).toBeGreaterThanOrEqual(2)
     expect(new Set(ids).size, 'all ids unique').toBe(ids.length)
   })
   it('shell frame clip is referenced by url(#id) per instance', () => {
-    const html = renderToStaticMarkup(<DeviceArtwork typeId="adsorber" />)
+    const html = renderToStaticMarkup(<DeviceArtwork typeId="adsorber" mode="shell" />)
     const clip = html.match(/clipPath id="([^"]+)"/)?.[1]
     expect(clip, 'frame clip id').toBeTruthy()
     expect(html).toContain(`url(#${clip})`)
+  })
+  it('r45 · rig is the default demo view: layered 2.5D machine, no atlas sticker', () => {
+    for (const t of TYPES) {
+      const html = renderToStaticMarkup(<DeviceArtwork typeId={t} phase={0.7} />)
+      expect(html, `${t} rig layer`).toContain('qh-machine-rig')
+      expect(html, `${t} rig has no atlas`).not.toContain('device-family-r01.png')
+      expect(html, `${t} rig cutaway`).toContain('rig-cut')
+    }
+    const a = renderToStaticMarkup(<DeviceArtwork typeId="screw" phase={0.4} />)
+    const b = renderToStaticMarkup(<DeviceArtwork typeId="screw" phase={0.8} />)
+    expect(a, 'rig phase moves geometry').not.toBe(b)
   })
 })

@@ -20,16 +20,27 @@ interface ClockState {
   active: number
   src: MechClockSource | null
   subs: Set<(t: number) => void>
+  /** r45 ④ · host=跟随业务回放；presentation=教学演示时间线（宿主锁定/暂停时）；frozen=无活动订阅或后台。 */
+  mode: 'host' | 'presentation' | 'frozen'
 }
-const clock: ClockState = { t: 0, lastIndex: -1, raf: 0, lastTs: 0, lastNotify: 0, active: 0, src: null, subs: new Set() }
+const clock: ClockState = { t: 0, lastIndex: -1, raf: 0, lastTs: 0, lastNotify: 0, active: 0, src: null, subs: new Set(), mode: 'frozen' }
 
 function step(ts: number) {
   const dt = clock.lastTs ? Math.min(0.1, (ts - clock.lastTs) / 1000) : 0
   clock.lastTs = ts
   const src = clock.src
-  if (src && clock.active > 0) {
-    if (src.index !== clock.lastIndex) { clock.t = SECONDS_PER_HOST_INDEX * src.index; clock.lastIndex = src.index }
-    if (src.playing && typeof document !== 'undefined' && !document.hidden) clock.t += dt * src.speed
+  const live = typeof document !== 'undefined' && !document.hidden
+  if (clock.active > 0 && live) {
+    if (src) {
+      if (src.index !== clock.lastIndex) { clock.t = SECONDS_PER_HOST_INDEX * src.index; clock.lastIndex = src.index }
+      if (src.playing) { clock.t += dt * src.speed; clock.mode = 'host' }
+      else { clock.t += dt; clock.mode = 'presentation' }
+    } else {
+      clock.t += dt
+      clock.mode = 'presentation'
+    }
+  } else {
+    clock.mode = 'frozen'
   }
   if (ts - clock.lastNotify > 33) {
     clock.lastNotify = ts
@@ -50,6 +61,7 @@ export function bindMechSource(src: MechClockSource | null) {
   if (src) clock.lastIndex = src.index
 }
 export function mechPhaseNow(): number { return clock.t }
+export function mechClockMode(): 'host' | 'presentation' | 'frozen' { return clock.mode }
 
 const REDUCE_Q = '(prefers-reduced-motion: reduce)'
 export function motionReduced(): boolean {

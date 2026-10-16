@@ -26,3 +26,27 @@
 .qh-preview-wheel[data-motion=paused] .qh-wheel-slot { transition:none; }
 @media (max-width:480px) { .qh-wheel-slot { transform:translateX(calc(-50% + var(--wheel-offset)*34px)) translateY(calc(var(--wheel-offset)*var(--wheel-offset)*9px)) rotate(calc(var(--wheel-offset)*10deg)); }.qh-wheel-card{padding:16px;} }
 @media (prefers-reduced-motion:reduce) { .qh-wheel-slot { transition:none; }.qh-wheel-preview-hit{scroll-behavior:auto;} }
+
+/* r45 A1 - one family: center/neighbour cards, arrows, tabs, type text hierarchy. */
+.qh-preview-wheel { position: relative; }
+.qh-wheel-slot { transform: translateX(calc(-50% + var(--wheel-offset)*64px)) translateY(calc(var(--wheel-offset)*var(--wheel-offset)*10px)) rotate(calc(var(--wheel-offset)*8deg)); }
+.qh-wheel-card {
+  background: color-mix(in srgb, var(--surface) calc(var(--qh-glass-fill, .76) * 100%), transparent);
+  -webkit-backdrop-filter: blur(var(--qh-glass-blur, 12px)) saturate(var(--qh-glass-sat, 125%));
+  backdrop-filter: blur(var(--qh-glass-blur, 12px)) saturate(var(--qh-glass-sat, 125%));
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 26px rgb(0 0 0 / .16), inset 0 1px 0 rgb(255 255 255 / var(--qh-glass-gloss, .1));
+}
+.qh-wheel-slot[data-active=false] .qh-wheel-card { color: var(--text); }
+.qh-wheel-heading h3 { font-size: 18px; }
+.qh-wheel-heading > span { font-family: var(--mono, ui-monospace, monospace); font-size: 12px; }
+.qh-wheel-eyebrow { font-size: 12px; letter-spacing: .06em; }
+.qh-wheel-controls > button:first-child { position: absolute; left: 4px; top: 42%; z-index: 20; }
+.qh-wheel-controls > button:last-child { position: absolute; right: 4px; top: 42%; z-index: 20; }
+.qh-wheel-controls { justify-content: center; padding-inline: 56px; }
+.qh-wheel-content details > summary { cursor: pointer; min-height: 32px; display: inline-flex; align-items: center; gap: 6px; color: var(--brand); font-size: 13px; }
+@media (max-width: 640px) {
+  .qh-wheel-controls > button:first-child { left: 0; top: auto; bottom: -8px; position: static; }
+  .qh-wheel-controls > button:last-child { right: 0; top: auto; bottom: -8px; position: static; }
+  .qh-wheel-controls { padding-inline: 0; }
+}

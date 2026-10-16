@@ -106,8 +106,8 @@ describe('M4 护照空态', () => {
     expect(wp).toContain('尚无决策护照')
     expect(wp).toContain('生成并封存一次方案后')
     expect(wp).toContain('真实记录')
-    // 演示入口存在（hero + 页尾 + 护照空态）
-    expect((wp.match(/进入评审演示/g) || []).length).toBeGreaterThanOrEqual(3)
+    // 演示入口存在（r45 A5：Hero 主入口 + 护照空态复用；末尾 CTA 大卡已删）
+    expect((wp.match(/进入评审演示/g) || []).length).toBeGreaterThanOrEqual(2)
     // 无伪造护照字段
     expect(wp).not.toMatch(/护照 ID<\/span>/)
   })

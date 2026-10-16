@@ -30,7 +30,7 @@ export default function NotesBar({
     })
     return () => { active = false; stop() }
   }, [open])
-  const keys: NoteKey[] = ['synthetic', 'readonly', offline ? 'offline' : 'data', 'approval', 'local', 'flow', 'passport', 'relations', 'governance', 'prerecord']
+  const keys: NoteKey[] = ['synthetic', 'readonly', offline ? 'offline' : 'data', 'approval', 'local', 'flow', 'passport', 'relations', 'governance', 'prerecord', 'bounds']
 
   const reduce = () => typeof window !== 'undefined'
     && typeof window.matchMedia === 'function'

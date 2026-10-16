@@ -65,7 +65,8 @@ describe('real Driver component lifecycle', () => {
     act(()=>later.click())
     expect(document.querySelector('.tour-invite')).toBeNull()
     expect(localStorage.getItem('user-passports')).toBe('untouched')
-    expect(document.querySelector('.tour-replay')).toBeTruthy()
+    // r45 ⑥ · 重开入口由宿主（App 左导航工具行）提供，ConsoleTour 自身不再渲染游离按钮。
+    expect(document.querySelector('.tour-replay')).toBeNull()
     localStorage.removeItem('user-passports')
   })
   it('starts actual overlay and cleans it on route change', async () => {
@@ -101,7 +102,7 @@ describe('actual App tour integration', () => {
     act(()=>root!.unmount()); root=createRoot(document.getElementById('test-root')!)
     await act(async()=>{ root!.render(<App />); await new Promise(r=>setTimeout(r,40)) })
     expect(document.querySelector('.tour-invite')).toBeNull()
-    expect(document.querySelector('.tour-replay')).toBeTruthy()
+    expect(document.querySelector('[data-testid="rail-guide-btn"]')).toBeTruthy()
   })
 })
 

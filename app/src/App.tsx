@@ -242,6 +242,8 @@ export default function App() {
 
   // S1 侧栏：固定窄栏（移除滑动设计；移动端用 railOpen 抽屉）。不保存/伪造身份。
   const [railOpen, setRailOpen] = useState(false)
+  // r45 ⑥ · 左导航底部指引按钮的触发 nonce（ConsoleTour 单入口）。
+  const [guideNonce, setGuideNonce] = useState(0)
   const [demoTarget, setDemoTarget] = useState<string | null>(null)
   const railTriggerRef = useRef<HTMLButtonElement | null>(null)
   const railAsideRef = useRef<HTMLElement | null>(null)
@@ -1510,18 +1512,35 @@ export default function App() {
           <a className="rail-welcome-link" href="#/welcome" aria-label="返回序幕（开场前言）">
             ← 返回序幕
           </a>
-          <AppearanceDock
-            environmentPosition={scenePosition}
-            onEnvironmentPositionChange={setScenePosition}
-            glassIntensity={glassIntensity}
-            onGlassIntensityChange={setGlassIntensity}
-            appearanceMode={appearanceMode}
-            onAppearanceModeChange={setAppearanceMode}
-            followLocalTime={followRealTime}
-            onFollowLocalTimeChange={setFollowRealTime}
-            onReset={resetAppearance}
-            materialVars={appearanceVars}
-          />
+          {/* r45 ⑥ · 底部真实工具行：环境 + 指引 同一 flex 容器，单入口，不再 fixed 游离。 */}
+          <div className="rail-tools" role="group" aria-label="环境与指引">
+            <AppearanceDock
+              environmentPosition={scenePosition}
+              onEnvironmentPositionChange={setScenePosition}
+              glassIntensity={glassIntensity}
+              onGlassIntensityChange={setGlassIntensity}
+              appearanceMode={appearanceMode}
+              onAppearanceModeChange={setAppearanceMode}
+              followLocalTime={followRealTime}
+              onFollowLocalTimeChange={setFollowRealTime}
+              onReset={resetAppearance}
+              materialVars={appearanceVars}
+            />
+            <button
+              type="button"
+              className="rail-tool-btn"
+              data-testid="rail-guide-btn"
+              aria-label="使用指引（重开当前模块导览）"
+              title="使用指引"
+              onClick={() => setGuideNonce((n) => n + 1)}
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.6 9.2a2.5 2.5 0 0 1 4.9.6c0 1.6-2.2 2-2.2 3.4" strokeLinecap="round" />
+                <circle cx="12.3" cy="16.6" r="0.9" fill="currentColor" stroke="none" />
+              </svg>
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -1880,7 +1899,7 @@ export default function App() {
         </footer>
       </div>
 
-      <ConsoleTour routeKey={`${route.top}/${route.sub}`} onRailChange={setRailOpen} />
+      <ConsoleTour routeKey={`${route.top}/${route.sub}`} onRailChange={setRailOpen} guideNonce={guideNonce} />
       <CommandPalette
         open={commandOpen}
         onClose={() => setCommandOpen(false)}
