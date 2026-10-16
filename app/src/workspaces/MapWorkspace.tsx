@@ -99,6 +99,7 @@ export default function MapWorkspace({ run, scenario, scenarioLabel, filter, sel
         {playbackSlot ? <div className="map-playback">{playbackSlot}</div> : null}
       </section>
       <RelationEvidence
+        fitViewport
         onOpenBatch={onOpenBatch}
         onOpenEvent={onOpenEvent}
         onOpenSource={onOpenSource}

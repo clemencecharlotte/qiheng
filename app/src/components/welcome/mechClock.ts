@@ -58,7 +58,10 @@ function maybeStop() {
 /** 宿主回放源绑定（DeviceSystemExperience 单一写者；null = 无宿主时钟，相位冻结）。 */
 export function bindMechSource(src: MechClockSource | null) {
   clock.src = src
-  if (src) clock.lastIndex = src.index
+  if (src && src.index !== clock.lastIndex) {
+    clock.t = SECONDS_PER_HOST_INDEX * src.index
+    clock.lastIndex = src.index
+  }
 }
 export function mechPhaseNow(): number { return clock.t }
 export function mechClockMode(): 'host' | 'presentation' | 'frozen' { return clock.mode }

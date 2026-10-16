@@ -1,5 +1,5 @@
 import { replayWindow } from './replayWindow'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import type { ScenarioRun } from '../domain/engine'
 import type { PeriodPlan, PlanResult } from '../domain/types'
 import type { ObservationClockApi } from './useObservationClock'
@@ -366,7 +366,7 @@ export default function SupplyDemandTrend({
                 className="axis-text tick-text"
                 x={chartX(t)}
                 y={PAD.top + PLOT_H + 14}
-                textAnchor="middle"
+                textAnchor={t === windowEnd - 1 ? "end" : "middle"}
               >
                 {points[t]?.label ?? ''}
               </text>
@@ -399,7 +399,7 @@ export default function SupplyDemandTrend({
             x2={obsX}
             y2={PAD.top + PLOT_H}
           />
-          <text className="axis-text" x={obsX + 3} y={PAD.top + 10}>
+          <text className="axis-text" x={obsX > WIDTH / 2 ? obsX - 3 : obsX + 3} textAnchor={obsX > WIDTH / 2 ? "end" : "start"} y={PAD.top + 10}>
             观察 {points[obsIndex]?.label ?? ''}
           </text>
 
@@ -450,16 +450,16 @@ export default function SupplyDemandTrend({
           )}
 
           {diffMode && diff ? (
-            <path className="series diff" d={pathFor(diff.slice(windowStart, windowEnd), diffY)} fill="none" />
+            <path className="series diff" d={pathFor(diff.slice(windowStart, windowEnd), diffY)} fill="none" style={{ d: `path("${pathFor(diff.slice(windowStart, windowEnd), diffY)}")`, fill: "none" } as CSSProperties} />
           ) : null}
           {!diffMode && showBranch && branch ? (
-            <path className="series branch" d={pathFor(branch.slice(windowStart, windowEnd), seriesY)} fill="none" />
+            <path className="series branch" d={pathFor(branch.slice(windowStart, windowEnd), seriesY)} fill="none" style={{ d: `path("${pathFor(branch.slice(windowStart, windowEnd), seriesY)}")`, fill: "none" } as CSSProperties} />
           ) : null}
           {!diffMode && hasPlan && showSupply ? (
-            <path className="series supply" d={pathFor(supply.slice(windowStart, windowEnd), seriesY)} fill="none" />
+            <path className="series supply" d={pathFor(supply.slice(windowStart, windowEnd), seriesY)} fill="none" style={{ d: `path("${pathFor(supply.slice(windowStart, windowEnd), seriesY)}")`, fill: "none" } as CSSProperties} />
           ) : null}
           {!diffMode && showDemand ? (
-            <path className="series demand" d={pathFor(demand.slice(windowStart, windowEnd), seriesY)} fill="none" />
+            <path className="series demand" d={pathFor(demand.slice(windowStart, windowEnd), seriesY)} fill="none" style={{ d: `path("${pathFor(demand.slice(windowStart, windowEnd), seriesY)}")`, fill: "none" } as CSSProperties} />
           ) : null}
 
           <rect

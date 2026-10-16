@@ -59,14 +59,24 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
   const count = points.length
   const [dynamic, setDynamic] = useState(true)
   const projection = useRef(replayWindow(count, api.effectiveIndex, dynamic))
+  const projectedSlots = useRef(Math.max(1, Math.min(16, count)))
   // Preserve the exact screen-to-index mapping throughout a drag; a saved range does not disable replay.
-  if (api.state.brushStart === null) projection.current = replayWindow(count, api.effectiveIndex, dynamic)
+  if (api.state.brushStart === null) {
+    projection.current = replayWindow(count, api.effectiveIndex, dynamic)
+    projectedSlots.current = dynamic ? Math.max(1, Math.min(16, count)) : Math.max(1, count)
+  }
   const [windowStart, windowEnd] = projection.current
+  // r46 · 显示槽位动态固定 16（不足 16 留空槽，不补零/不伪造未来实测）；全段静态取总数。
+  const spanSlots = projectedSlots.current
   const visibleCount = windowEnd - windowStart
+  const dataCount = points.slice(windowStart, windowEnd).filter((p) => p && p.value !== null).length
   const max = Math.max(1, ...points.map((p) => p.value ?? 0))
   const barGap = 4
-  const barW = count ? Math.max(2, plotW / Math.max(1, visibleCount) - barGap) : 2
-  const slot = count ? plotW / Math.max(1, visibleCount) : plotW
+  // r46 · 柱宽上限按真实容器换算（桌面 28 / 移动 16 CSS px），柱在槽内居中留隙。
+  const capCss = boxW && boxW < 480 ? 16 : 28
+  const capSvg = boxW > 0 ? capCss * (width / boxW) : 24
+  const slot = count ? plotW / spanSlots : plotW
+  const barW = count ? Math.min(Math.max(2, slot - barGap), Math.max(2, capSvg)) : 2
   const centerX = (i: number) => padding.left + (i - windowStart) * slot + slot / 2
   // r40 ④·3：轴标签按槽宽自适应抽稀（按桌面 9px/窄屏强制 16px 的较大者估算 ~48px/签），
   // 首末刻度必显并以 start/end 端点锚定；全段 96 桶（slot≈6.5px）不再互相重叠。
@@ -96,15 +106,21 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
 
   // r44 G · 真实序列曲线：null 断线不连穿；与柱同源同刻；填充层低 alpha，线/点在其上。
   const yOf = (v: number) => padding.top + plotH - (v / max) * plotH
+  // r46 · 曲线=主趋势：≥2 个连续有效点才连线；单点显示点；null/未来空槽断开。
   let curveD = ''
-  let pen = false
+  const runs: Array<Array<{ x: number; y: number; i: number }>> = []
+  let cur: Array<{ x: number; y: number; i: number }> = []
   for (let i = windowStart; i < windowEnd; i++) {
     const v = points[i]?.value ?? null
-    if (v === null) { pen = false; continue }
-    const x = centerX(i)
-    curveD += `${pen ? 'L' : 'M'}${x.toFixed(1)} ${yOf(v).toFixed(1)} `
-    pen = true
+    if (v === null) { if (cur.length) runs.push(cur); cur = []; continue }
+    cur.push({ x: centerX(i), y: yOf(v), i })
   }
+  if (cur.length) runs.push(cur)
+  curveD = runs
+    .filter((r) => r.length >= 2)
+    .map((r) => r.map((pt, k) => `${k ? 'L' : 'M'}${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`).join(' '))
+    .join(' ')
+  const singles = runs.filter((r) => r.length === 1).map((r) => r[0])
 
   const rangeRect =
     range && range[1] > range[0]
@@ -134,7 +150,7 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
     <div className="trend qh-history-trend">
       <div className="trend-head">
         <button type="button" className="btn ghost" aria-pressed={dynamic} onClick={() => setDynamic(v => !v)}>{dynamic ? "动态回放 · 16桶" : "全段静态比较"}</button>
-        {!empty ? <span className="trend-window">{points[windowStart]?.label}–{points[windowEnd - 1]?.label} · {visibleCount} 桶</span> : null}
+        {!empty ? <span className="trend-window">{points[windowStart]?.label}–{points[windowEnd - 1]?.label} · 已回放 {visibleCount}/{spanSlots} 槽 · 有效 {dataCount}</span> : null}
         <span>
           {unit} · {metricLabel}
         </span>
@@ -207,14 +223,14 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
           {points.slice(windowStart, windowEnd).map((p, localIndex) => {
             const i = localIndex + windowStart
             const h = ((p.value ?? 0) / max) * plotH
-            const x = padding.left + localIndex * slot + barGap / 2
+            const x = centerX(i) - barW / 2
             const y = padding.top + plotH - h
             return (
               <g key={p.label}>
                 {p.value === null ? (
                   <rect
                     className="missing-tick"
-                    x={padding.left + localIndex * slot + barGap / 2}
+                    x={centerX(i) - barW / 2}
                     y={padding.top + plotH - 3}
                     width={barW}
                     height={3}
@@ -257,6 +273,9 @@ export default function HistoryTrend({ points, unit, objectLabel, metricLabel, a
           {curveD ? (
             <path className="trend-curve" d={curveD} fill="none" stroke="var(--brand)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
           ) : null}
+          {singles.map((pt) => (
+            <circle key={`single-${pt.i}`} cx={pt.x} cy={pt.y} r="3" fill="var(--brand)" />
+          ))}
 
           <line
             className="obs-marker"

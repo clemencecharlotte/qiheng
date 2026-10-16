@@ -1,6 +1,9 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import DeviceDetailsDrawer from './DeviceDetailsDrawer'
-import UnitGlyph from './UnitGlyph'
+import DeviceArtwork from './welcome/DeviceArtwork'
+import { bindMechSource, useMechPhase } from './welcome/mechClock'
+import { INFORMATIVE_PHASE, SECONDS_PER_HOST_INDEX } from './welcome/deviceKinematics'
+import type { ObservationClockApi } from './useObservationClock'
 import { usePointerGlow } from './usePointerGlow'
 import type { DeviceState, OverviewSnapshot } from '../domain/overview'
 import StatusBadge, { type StatusTone } from './console/StatusBadge'
@@ -21,6 +24,7 @@ const STATE_TONE: Record<DeviceState, StatusTone> = {
 
 interface Props {
   snapshot: OverviewSnapshot
+  clock?: ObservationClockApi
   runIdentity?: string
   linkedUnitId: string | null
   hoverUnitId: string | null
@@ -29,8 +33,29 @@ interface Props {
   onClearLock: () => void
 }
 
+/** Same artwork as the prologue, driven only by the current plan/replay state. */
+function StageMachine({ view, clock }: { view: OverviewSnapshot['units'][number]; clock?: ObservationClockApi }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const [visible, setVisible] = useState(true)
+  const [foreground, setForeground] = useState(() => typeof document === 'undefined' || !document.hidden)
+  useEffect(() => {
+    const update = () => setForeground(!document.hidden)
+    document.addEventListener('visibilitychange', update)
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting))
+    if (ref.current) observer?.observe(ref.current)
+    return () => { document.removeEventListener('visibilitychange', update); observer?.disconnect() }
+  }, [])
+  const typeId = view.unit.kind === 'centrifugal' ? 'centrifugal' : 'screw'
+  const phase = useMechPhase(Boolean(clock?.state.playing && view.state === 'running' && visible && foreground),
+    view.state === 'running' ? (clock?.effectiveIndex ?? 0) * SECONDS_PER_HOST_INDEX : INFORMATIVE_PHASE[typeId])
+  return <span ref={ref} className="stage-machine-art" data-state={view.state} aria-hidden="true">
+    <DeviceArtwork typeId={typeId} phase={phase} />
+  </span>
+}
+
 export default function DeviceStage({
   snapshot,
+  clock,
   runIdentity = '',
   linkedUnitId,
   hoverUnitId,
@@ -51,6 +76,11 @@ export default function DeviceStage({
   useEffect(() => {
     if (details && !detailView) setDetails(null)
   }, [details, detailView])
+  useEffect(() => {
+    if (!clock) return
+    bindMechSource({ playing: clock.state.playing, speed: clock.state.speed, index: clock.effectiveIndex })
+    return () => bindMechSource(null)
+  }, [clock?.state.playing, clock?.state.speed, clock?.effectiveIndex])
 
   return (
     <section className="panel stage-panel" aria-label="设备与供需舞台">
@@ -142,7 +172,7 @@ export default function DeviceStage({
                     }
                   }}
                 >
-                  <UnitGlyph unit={view.unit} state={view.state} size={104} />
+                  <StageMachine view={view} clock={clock} />
                   <div className="stage-card-head">
                     <strong>{view.unit.name}</strong>
                     <span className="unit-id">{id}</span>

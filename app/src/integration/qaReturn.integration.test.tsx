@@ -47,9 +47,10 @@ it('QA 引用：显式返回恢复本次 QA 入口与已完成答案', async () 
   })
   const form = ta.closest('form')!
   await act(async () => { form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })); await new Promise((r) => setTimeout(r, 0)) })
-  const refId = qaEvidenceTriggerId('unit:AC-03')
-  const link = host.querySelector<HTMLButtonElement>(`[id="${refId}"]`)
+  // Message-level namespace prevents repeated questions from duplicating DOM IDs.
+  const link = host.querySelector<HTMLButtonElement>(`[id^="${qaEvidenceTriggerId('unit:AC-03')}--"]`)
   expect(link, '提问后应出现本次 qa-ref 证据入口').not.toBeNull()
+  const refId = link!.id
   await act(async () => { link!.click(); await new Promise((r) => setTimeout(r, 0)) })
   // 证据页（新 entry）
   await tick()

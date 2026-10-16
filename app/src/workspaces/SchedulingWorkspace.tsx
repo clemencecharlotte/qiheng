@@ -449,6 +449,7 @@ export default function SchedulingWorkspace({
             />
             <DeviceStage
               snapshot={snapshot}
+              clock={clock}
               runIdentity={runIdentity}
               linkedUnitId={linkedUnitId}
               hoverUnitId={hoverUnitId}

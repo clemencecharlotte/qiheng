@@ -79,7 +79,7 @@ import {
 } from './components/appearance/appearanceState'
 import SceneBackdrop from './components/w1/SceneBackdrop'
 import { resolveEnvironment } from './components/w1/environmentAdapter'
-import { sampleGlass } from './components/b5/glass-anchors'
+import { sampleGlassVars } from './components/b5/glass-anchors'
 import type { RelationKind } from './integration/relations'
 import {
   BUCKET_COUNT,
@@ -1360,32 +1360,7 @@ export default function App() {
   const scenePosition = envBinding.scenePosition
   // B5：glassIntensity → 六锚点连续材质，按表面角色采样（hero/button/overlay/card/data）。
   const glassPct = Math.round(glassIntensity * 100)
-  const gCard = sampleGlass(glassIntensity, 'card')
-  const gBtn = sampleGlass(glassIntensity, 'button')
-  const gOverlay = sampleGlass(glassIntensity, 'overlay')
-  const gData = sampleGlass(glassIntensity, 'data')
-  const appearanceVars = {
-    '--cg-blur': `${gCard.blur}px`,
-    // r44 B · 消费者按小数（*100%）读取：此处统一 /100，修复百分比被 color-mix 钳成实底。
-    '--cg-fill-a': String(gCard.fillAlpha / 100),
-    '--cg-edge': String(gCard.edge),
-    '--cg-gloss': String(gCard.gloss),
-    '--cg-shadow': String(gCard.shadow),
-    '--cg-btn-blur': `${gBtn.blur}px`,
-    '--cg-btn-fill-a': String(gBtn.fillAlpha / 100),
-    '--cg-overlay-blur': `${gOverlay.blur}px`,
-    '--cg-overlay-fill-a': String(gOverlay.fillAlpha / 100),
-    '--cg-data-blur': `${gData.blur}px`,
-    '--cg-data-fill-a': String(gData.fillAlpha / 100),
-    // 兼容既有 liquid-glass token（面板=card）
-    '--qh-glass-blur': `${gCard.blur}px`,
-    '--qh-glass-sat': '140%',
-    '--qh-glass-fill': String(gCard.fillAlpha / 100),
-    '--qh-glass-btn-fill': String(gBtn.fillAlpha / 100),
-    '--qh-glass-edge': String(gCard.edge),
-    '--qh-glass-gloss': String(gCard.gloss),
-    '--qh-glass-shadow': String(gCard.shadow),
-  } as React.CSSProperties
+  const appearanceVars = sampleGlassVars(glassIntensity) as React.CSSProperties
 
   // M22 r07 · 将外观/材质（连续 g）变量同步到 documentElement：
   // createPortal 的模态（OriginDialog/.u-dialog/.topbar-modal）脱离 .appearance-host，
@@ -1853,7 +1828,11 @@ export default function App() {
               onBack={goBackWithReturn}
               onOpenWindow={(source, a, b, originId) => navigate({ top: source === 'synthetic_history' ? 'history' : 'schedule', sub: source === 'synthetic_history' ? 'trend' : 'evidence', source: source === 'synthetic_history' ? 'history' : 'schedule', t: a, a, b }, { originId })}
               view={qaView}
-              onViewChange={(v) => setQaView(v ? { input: v.input, answer: v.answer, runIdentity: runIdentityRef.current } : null)}
+              onViewChange={(v) => {
+                const next = v ? { ...v, runIdentity: runIdentityRef.current } : null
+                qaViewRef.current = next
+                setQaView(next)
+              }}
             />
           ) : null}
 

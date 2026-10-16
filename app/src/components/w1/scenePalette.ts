@@ -216,6 +216,8 @@ export function useSceneChase(target: number, onFrame: (visual: number) => void,
   targetRef.current = target
 
   useEffect(() => {
+    // A settled initial target still has to paint its foreground and mechanism variables.
+    onFrameRef.current(visualRef.current)
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduce || !enabled) {
       if (raf.current !== null) {

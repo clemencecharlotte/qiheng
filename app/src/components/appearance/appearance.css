@@ -140,10 +140,7 @@
 }
 .appearance-scene-pop .asp-dot { width: 4px; height: 4px; border-radius: 50%; background: color-mix(in srgb, var(--brand, #176b62) 45%, transparent); }
 
-/* 折叠 72 侧栏：两控件竖排，不溢出盖数据 */
-.app-rail[data-collapsed="1"] .appearance-scene-ctl-btns { flex-direction: column; }
-.app-rail[data-collapsed="1"] .appearance-scene-trigger { min-width: 0; width: 100%; padding: 0 6px; justify-content: center; }
-.app-rail[data-collapsed="1"] .appearance-scene-trigger .asc-label { display: none; }
+/* 折叠 72 侧栏：r40 随死属性 data-collapsed 删除（全仓无设置者）。 */
 
 /* M13 r04 · 浮层在窄屏不超窗、可滚动；欢迎左下入口紧凑可见 */
 .appearance-scene-pop { max-height: min(72vh, 560px); overflow: auto; }

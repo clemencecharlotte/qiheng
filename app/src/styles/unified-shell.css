@@ -42,7 +42,7 @@
 .qh-note-ref button { background: transparent; border: 0; color: var(--brand, #176b62); cursor: pointer; font: inherit; padding: 0 1px; text-decoration: underline; }
 .qh-note-ref button:focus-visible { outline: 2px solid var(--brand, #176b62); outline-offset: 1px; }
 .app-footer-notes .qh-note { display: flex; gap: 6px; align-items: baseline; }
-.app-footer-notes .qh-note-back { margin-left: auto; background: transparent; border: 0; color: var(--brand, #176b62); cursor: pointer; font-size: 11px; min-height: 24px; }
+.app-footer-notes .qh-note-back { margin-left: auto; background: transparent; border: 0; color: var(--brand, #176b62); cursor: pointer; font-size: 11px; min-height: 44px; }
 
 /* M12 r03 · 统一形状/材质 token（作用域；一级/二级面板/按钮/card 同族） */
 .app-shell,

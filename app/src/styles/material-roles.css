@@ -50,13 +50,13 @@
   --material-control-fill: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-btn-fill-a, .9), .86) * 100%), transparent);
   --material-control-filter: blur(min(var(--cg-btn-blur, 0px), 6px)) saturate(130%);
   --material-control-shadow: inset 0 1px 0 rgb(255 255 255 / var(--cg-gloss, 0)), 0 2px 6px rgb(0 0 0 / calc(min(2, var(--cg-shadow, 0)) * .035));
-  --material-decor-fill: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-fill-a, .8), .5) * 100%), transparent);
+  --material-decor-fill: color-mix(in srgb, var(--surface, #fff) calc(max(var(--cg-fill-a, .8), .66) * 100%), transparent);
   --material-decor-filter: blur(var(--cg-blur, 0px)) saturate(140%);
 }
 /* Three-class consumers beat old panel rules without !important. */
 .appearance-host :is(.app-shell .panel, .app-shell .context-rail,
   .app-shell .qh-relations, .app-shell .table-wrap, .app-shell .agent-resource,
-  .qh-welcome .qh-flowval-stage, .qh-welcome .qh-demo-machine, .qh-welcome .qh-wheel-card) {
+  .qh-welcome .qh-flowval-stage) {
   color: var(--text);
   background: var(--material-read-fill);
   border-color: var(--material-read-border);
@@ -67,12 +67,15 @@
 }
 .appearance-host :is(.app-shell .panel, .app-shell .context-rail)::before,
 .appearance-host :is(.app-shell .panel, .app-shell .context-rail)::after { background: none; }
-.appearance-host :is(.qh-welcome .u-w1-scene, .qh-welcome .u-w1-cap__card, .qh-welcome .u-glass) {
+.appearance-host :is(.qh-welcome .u-w1-scene, .qh-welcome .u-w1-cap__card, .qh-welcome .u-glass,
+  .qh-demo-machine, .qh-wheel-card, .qh-device-panel, .chat-composer) {
   background: var(--material-decor-fill);
   border-color: var(--material-read-border);
   border-radius: var(--mr-radius-card);
   -webkit-backdrop-filter: var(--material-decor-filter);
   backdrop-filter: var(--material-decor-filter);
+  color: var(--text);
+  box-shadow: var(--material-read-shadow);
 }
 .appearance-host :is(input:not([type=range]):not([type=checkbox]):not([type=radio]), select, textarea) {
   box-sizing: border-box; min-width: 0; max-width: 100%; min-height: 44px;

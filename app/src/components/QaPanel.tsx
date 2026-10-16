@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { EvidenceContext, EvidenceWorkspace } from '../domain/evidence'
 import type { ApprovalDecision } from '../domain/types'
+import type { QaViewSnapshot } from '../integration/evidenceReturn'
 import {
   PRESET_QUESTIONS,
   askQuestion,
@@ -32,10 +33,7 @@ interface Props {
 }
 
 /** QA 已完成视图（受控）。 */
-export interface QaView {
-  input: string
-  answer: NarratedAnswer | null
-}
+export type QaView = Omit<QaViewSnapshot, 'runIdentity'>
 
 /** QA 外部稳定 trigger ID：返回时用于回焦本次问答入口。 */
 export function qaEvidenceTriggerId(target: string): string {

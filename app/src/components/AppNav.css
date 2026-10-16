@@ -91,9 +91,8 @@
   }
 }
 
-/* S1 · 收束态与抽屉（宽度/显隐由 app-shell 的 --rail-w 与 data-open 驱动） */
-.app-rail[data-collapsed="1"] .console-nav .nav-label { display: none; }
-.app-rail[data-collapsed="1"] .console-nav .console-nav-group-label { text-align: center; padding-inline: 0; }
+/* S1 · 收束态与抽屉（宽度/显隐由 app-shell 的 --rail-w 与 data-open 驱动）
+   r40：data-collapsed 收束规则随死属性删除（全仓无设置者）。 */
 @media (max-width: 600px) {
   .console-nav .console-nav-group-label { display: none; }
   .console-nav .nav-item { min-height: 48px; }

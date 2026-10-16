@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { sampleGlass, SURFACE_ROLES } from './glass-anchors'
+import { sampleGlass, sampleGlassVars, SURFACE_ROLES } from './glass-anchors'
 
 describe('M16 r02 B5 连续玻璃（消费副本 shadow 不取整）', () => {
+  it('host and portal alpha retain the sampler fraction without dividing it by 100 twice', () => {
+    for (const g of [0, .25, .5, .75, 1]) {
+      const vars = sampleGlassVars(g)
+      const alpha = sampleGlass(g).fillAlpha
+      expect(Number(vars['--cg-fill-a'])).toBe(alpha)
+      expect(Number(vars['--qh-glass-fill'])).toBe(alpha)
+      expect(vars['--lg-alpha']).toBe(`${alpha * 100}%`)
+      expect(Number(vars['--cg-data-fill-a'])).toBeGreaterThanOrEqual(.9)
+    }
+  })
   it('shadow 连续：g .299 vs .300 不因取整跳变', () => {
     const a = sampleGlass(0.299, 'card').shadow
     const b = sampleGlass(0.300, 'card').shadow

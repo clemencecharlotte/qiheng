@@ -151,9 +151,10 @@ export default function EventsWorkspace({
     safety_review: '复验审查',
     human_action: '人工处置',
   }
-  const [tab, setTab] = useState<'all' | 'dq' | 'hr' | 'sched' | 'human'>('all')
+  const [tab, setTab] = useState<'all' | 'attention' | 'dq' | 'hr' | 'sched' | 'human'>('all')
   const inTab = (e: TimelineEvent) =>
     tab === 'all' ||
+    (tab === 'attention' && (levelOf(e) === 'warn' || levelOf(e) === 'severe')) ||
     (tab === 'dq' && e.category === 'data_quality') ||
     (tab === 'hr' && e.category === 'health_rule') ||
     (tab === 'sched' && (e.category === 'schedule' || e.category === 'safety_review')) ||
@@ -181,6 +182,7 @@ export default function EventsWorkspace({
   }, [selectedEvent])
   const tabs: Array<{ id: typeof tab; label: string; n: number }> = [
     { id: 'all', label: '全部', n: timeline.length },
+    { id: 'attention', label: '需关注', n: countWarn + countBad },
     { id: 'dq', label: '数据质量', n: timeline.filter((e) => e.category === 'data_quality').length },
     { id: 'hr', label: '规则异常', n: timeline.filter((e) => e.category === 'health_rule').length },
     { id: 'sched', label: '调度与复验', n: timeline.filter((e) => e.category === 'schedule' || e.category === 'safety_review').length },
@@ -194,7 +196,7 @@ export default function EventsWorkspace({
           <div>
             <p className="qel-eyebrow">EVENTS / 事件</p>
             <h2 className="qel-title">事件</h2>
-            <p className="qel-sub">先找到事，再看证据；离线批次/数据质量与合成执行故障/审计分类呈现、不混业务状态。</p>
+            <p className="qel-sub">先看需关注的事件，再打开对象与证据。</p>
           </div>
           <div className="qel-head-actions">
             {observationLabel ? (
@@ -267,7 +269,7 @@ export default function EventsWorkspace({
                   <span className="qel-cell-time qel-time">{e.time}</span>
                   <span className="qel-cell-level"><span className={`qel-lv qel-lv--${levelOf(e)}`}>{e.status}</span></span>
                   <span className="qel-cell-object">{objectOf(e)}<span className="qel-object-kind">{CATEGORY_LABEL[e.category]}</span></span>
-                  <span className="qel-cell-summary qel-summary">{e.reason || e.title}</span>
+                  <span className="qel-cell-summary qel-summary">{e.title}</span>
                   <span className="qel-cell-source">
                     <span className={`qel-family qel-family--${e.source === 'synthetic_history' ? 'offline' : 'synthetic'}`}>
                       {e.source === 'synthetic_history' ? '合成回放' : '合成调度'}
@@ -277,7 +279,7 @@ export default function EventsWorkspace({
               </li>
             ))}
             {filtered.length === 0 ? (
-              <li><p className="qel-empty">当前筛选下无事件；不造“待处理”。</p></li>
+              <li><p className="qel-empty">当前筛选下无事件。</p></li>
             ) : null}
           </ul>
         </div>
@@ -309,6 +311,7 @@ export default function EventsWorkspace({
 
             <section className="qel-sec">
               <h4><span className="qel-sec-n">1</span>发生了什么</h4>
+              <p className="qel-sec-note">{selectedEvent.reason}</p>
               <p className="qel-sec-note">{selectedEvent.detail}</p>
             </section>
             <section className="qel-sec">

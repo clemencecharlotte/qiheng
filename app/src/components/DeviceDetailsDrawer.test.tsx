@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import type { OverviewSnapshot } from '../domain/overview'
+import type { ObservationClockApi } from './useObservationClock'
 
 type CapturedElement = { type: unknown; props: Record<string, unknown> }
 const captured = vi.hoisted(() => [] as CapturedElement[])
@@ -101,6 +102,13 @@ beforeEach(() => {
 })
 
 describe('设备独立只读详情入口', () => {
+  it('未知设备不会因宿主观察桶变化而产生伪运动', () => {
+    const unknownSnapshot = { ...snapshot, units: snapshot.units.filter((u) => u.state === 'unknown') }
+    expect(unknownSnapshot.units.length).toBeGreaterThan(0)
+    const clock = (index: number) => ({ state: { playing: true, speed: 1 }, effectiveIndex: index }) as ObservationClockApi
+    expect(renderToString(<DeviceStage {...stageProps(unknownSnapshot)} clock={clock(4)} />))
+      .toBe(renderToString(<DeviceStage {...stageProps(unknownSnapshot)} clock={clock(17)} />))
+  })
   it('详情按钮在 article role=button 之外，原证据标记不变', () => {
     const html = renderToString(<DeviceStage {...stageProps()} />)
     const articles = [...html.matchAll(/<article\b[^>]*>[\s\S]*?<\/article>/g)].map((match) => match[0])

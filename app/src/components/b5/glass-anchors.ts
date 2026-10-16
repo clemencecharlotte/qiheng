@@ -172,6 +172,26 @@ export function applyGlassSample(el: HTMLElement, s: GlassSample): void {
   el.style.setProperty('--cg-shadow', String(s.shadow))
 }
 
+/** All host/portal consumers use fractional alpha, as returned by sampleGlass. */
+export function sampleGlassVars(g: number): Record<string, string> {
+  const card = sampleGlass(g, 'card')
+  const button = sampleGlass(g, 'button')
+  const overlay = sampleGlass(g, 'overlay')
+  const data = sampleGlass(g, 'data')
+  return {
+    '--cg-blur': `${card.blur}px`, '--cg-fill-a': String(card.fillAlpha),
+    '--cg-edge': String(card.edge), '--cg-gloss': String(card.gloss), '--cg-shadow': String(card.shadow),
+    '--cg-btn-blur': `${button.blur}px`, '--cg-btn-fill-a': String(button.fillAlpha),
+    '--cg-overlay-blur': `${overlay.blur}px`, '--cg-overlay-fill-a': String(overlay.fillAlpha),
+    '--cg-data-blur': `${data.blur}px`, '--cg-data-fill-a': String(data.fillAlpha),
+    '--qh-glass-blur': `${card.blur}px`, '--qh-glass-sat': '140%',
+    '--qh-glass-fill': String(card.fillAlpha), '--qh-glass-btn-fill': String(button.fillAlpha),
+    '--qh-glass-edge': String(card.edge), '--qh-glass-gloss': String(card.gloss), '--qh-glass-shadow': String(card.shadow),
+    '--lg-blur': `${card.blur}px`, '--lg-alpha': `${card.fillAlpha * 100}%`,
+    '--lg-btn-alpha': `${button.fillAlpha * 100}%`,
+  }
+}
+
 /* ── 场景独立性声明 ──
    environmentPosition[0,5]（六环境）/ appearanceMode（light/dark/system）/
    followLocalTime / glassIntensity[0,1] 四维**彼此独立**：

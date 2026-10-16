@@ -130,8 +130,8 @@
   display: grid;
   gap: 4px 16px;
   align-items: baseline;
-  grid-template-columns: 148px 104px minmax(120px, 1fr) minmax(0, 2.2fr) minmax(140px, auto);
-  grid-template-areas: "time level object summary source";
+  grid-template-columns: 116px 96px minmax(100px, 1fr) minmax(0, 2.2fr);
+  grid-template-areas: "time level object summary";
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -334,4 +334,11 @@
 @media (prefers-reduced-motion: reduce) {
   .qel-drawer { animation: none; }
   .qel-list-wrap { scroll-behavior: auto; }
+}
+
+/* Source stays in the drawer; list rows are time / level / object / short headline. */
+.qel-row .qel-cell-source { display: none; }
+@media (max-width: 900px) {
+  .qel-row { grid-template-areas: "time level" "object object" "summary summary"; }
+  .qel-row .qel-summary { -webkit-line-clamp: 2; }
 }

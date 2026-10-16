@@ -32,4 +32,21 @@ describe('M23 B r07 · HistoryTrend 对象/单位分离 + 手机同快照', () =
     expect(html).toContain('暂无数据')
     expect(html).toContain('disabled=""')
   })
+  it('首桶保留16槽、限制柱宽，单点不画伪连线', () => {
+    const html = renderToStaticMarkup(<HistoryTrend unit="kWh" metricLabel="能量" api={{ ...api, effectiveIndex: 0 } as ObservationClockApi}
+      points={Array.from({ length: 32 }, (_, i) => ({ label: `${i}:00`, value: 80 + i, grade: 'pass' as const }))} />)
+    expect(html).toContain('1/16')
+    expect(html).not.toContain('class="trend-curve"')
+    expect(html).toContain('<circle')
+    const bar = html.match(/<rect[^>]*width="([\d.]+)"[^>]*fill="var\(--success\)"/)
+    expect(bar).not.toBeNull()
+    expect(Number(bar![1])).toBeLessThanOrEqual(28)
+    expect(html).not.toContain('1:00：')
+  })
+  it('数据集不足16时只分配真实槽位，null不跨接', () => {
+    const html = renderToStaticMarkup(<HistoryTrend unit="kWh" metricLabel="能量" api={{ ...api, effectiveIndex: 2 } as ObservationClockApi}
+      points={[{ label: '00:00', value: 2, grade: 'pass' }, { label: '00:15', value: null, grade: 'invalid' }, { label: '00:30', value: 4, grade: 'pass' }]} />)
+    expect(html).toContain('3/3')
+    expect(html).not.toContain('class="trend-curve"')
+  })
 })

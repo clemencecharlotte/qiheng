@@ -1379,6 +1379,11 @@ body {
   flex: 1;
 }
 
+/* r40 ④·5：面板常驻边界说明收纳进用户主动开启的 details（HistoryReviewPanel 等）；
+   summary 满足 44px 触控合同，与 demo-fleet M29 r35 渐进披露同款。 */
+.qh-panel-note > summary { cursor: pointer; font-size: .82rem; color: var(--muted); min-height: 44px; display: inline-flex; align-items: center; }
+.qh-panel-note > .hint { margin: 4px 0 0; }
+
 /* M29 r07 · L4 统一脚注数字角标：紧贴被引用内容，命中范围与样式一致（控制台内此前无样式→游离常规字）。 */
 .qh-note-ref { font-size: 0; line-height: 0; vertical-align: super; }
 .qh-note-ref button {
@@ -3859,16 +3864,11 @@ body {
   --glass-bg: color-mix(in srgb, var(--surface) 78%, transparent);
   --glass-border: color-mix(in srgb, var(--border) 80%, transparent);
 }
-.app-shell { grid-template-columns: var(--rail-w, 240px) minmax(0, 1fr); }
+.app-shell { grid-template-columns: var(--rail-w, 132px) minmax(0, 1fr); }
 
-/* 侧栏：连续可调 220–320，默认 240；收束 72 */
-.app-rail { width: var(--rail-w, 240px); padding-top: 6px; }
-.app-rail[data-collapsed="1"] { --rail-w: 72px; }
-.app-rail[data-collapsed="1"] .nav-label,
-.app-rail[data-collapsed="1"] .console-nav-group-label,
-.app-rail[data-collapsed="1"] .rail-brand { display: none; }
-.app-rail[data-collapsed="1"] .rail-welcome-link { font-size: 0; text-align: center; padding-inline: 4px; }
-.app-rail[data-collapsed="1"] .app-nav { gap: 10px; }
+/* 侧栏：r40 统一 fallback 与现行 132px 窄栏一致（App.tsx 内联 --rail-w:132px）；
+   data-collapsed 收束规则全仓无设置者，已按死规则删除。 */
+.app-rail { width: var(--rail-w, 132px); padding-top: 6px; }
 
 /* 拖拽手柄：8px 命中区，键盘可调（←→/Home/End），focus 明确 */
 .rail-handle {
@@ -3983,7 +3983,6 @@ sup.fn-ref {
   .app-topbar { height: 56px; min-height: 56px; padding: 0 12px; gap: 10px; }
   .topbar-search { min-width: 0; }
   .topbar-search .cmd-kbd { display: none; }
-  .app-rail[data-collapsed="1"] { --rail-w: 72px; }
   .app-footer { justify-content: flex-start; }
   .app-footer-notes { max-width: none; text-align: left; }
   .app-footer-notes li { font-size: 12.5px; }
@@ -4110,7 +4109,7 @@ sup.fn-ref {
   padding: 10px 16px;
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
-.page-head h2 { margin: 0; font-size: 16px; white-space: nowrap; }
+.page-head h2 { margin: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .page-head .tag, .page-head .hint { margin: 0; }
 
 
@@ -4164,7 +4163,7 @@ sup.fn-ref {
 .app-topbar .topbar-conn-offline { color: var(--muted); }
 .app-topbar .topbar-conn-unconfigured { color: var(--muted); }
 .app-topbar .topbar-conn-times { font-family: var(--mono, ui-monospace, monospace); font-size: 11px; }
-.app-topbar .topbar-conn-retry { min-height: 28px; padding: 2px 8px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: inherit; cursor: pointer; font-size: 12px; }
+.app-topbar .topbar-conn-retry { min-height: 44px; padding: 2px 8px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: inherit; cursor: pointer; font-size: 12px; }
 .app-topbar .topbar-conn-retry:disabled { opacity: .5; cursor: default; }
 .app-topbar .topbar-conn-loaded { display: grid; gap: 4px; max-width: 64ch; text-align: left; }
 .app-topbar .topbar-conn-loaded p { margin: 0; }
@@ -4194,7 +4193,7 @@ sup.fn-ref {
 /* M10 r03 · 源标签与关联动作（控制台作用域，沿用 token） */
 .qh-data-ingress .qdi-src-label { margin: 12px 0 0; font-size: 11.5px; color: var(--muted); }
 .qh-gov-events .qge-link,
-.qh-data-ingress .qdi-link { min-height: 34px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--brand); cursor: pointer; font-size: 13px; }
+.qh-data-ingress .qdi-link { min-height: 44px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--brand); cursor: pointer; font-size: 13px; }
 .qh-gov-events .qge-link { margin: 4px 0 8px; display: inline-block; }
 .qh-gov-events .qge-link:hover { border-color: var(--brand); }
 

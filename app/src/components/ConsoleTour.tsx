@@ -40,13 +40,13 @@ const ROUTE_STEPS: Record<string, Step[]> = {
   ],
   map: [
     ['.qh-relations', '关系图', '设备—管网—数据—决策—护照可定位；点击对象查看依据。'],
-    ['.qh-relations .toolbar, .map-workspace .toolbar, .workspace .qel-tabs', '筛选与邻域', '类型/邻域/视图切换；返回保原视角与选择。'],
-    ['.workspace .qel-note-details, .workspace details', '来源与范围', '只读 API 与域内合成口径按需展开。'],
+    ['.qrel-filters', '筛选与邻域', '类型/邻域/视图切换；返回保原视角与选择。'],
+    ['#relations-source-scope', '来源与范围', '只读 API 与域内合成口径按需展开。'],
   ],
   agent: [
-    ['.chat-main', '聊天是中心', '先提问；解释与调试信息默认不占主画面。'],
-    ['.chat-ctx', '当前上下文', '来源/观察/快照状态以 chips 呈现，可展开。'],
-    ['.chat-side', '工具与资料', '只读工具查询是真实调用（非LLM聊天），按需展开。'],
+    ['.chat-console', '聊天是中心', '先提问；解释与调试信息默认不占主画面。'],
+    ['.chat-composer-bar', '当前上下文', '输入区保留一个能力状态；上下文与来源按需打开。'],
+    ['.chat-composer-bar button[aria-haspopup="dialog"]', '工具与资料', '只读工具查询是真实调用（非LLM聊天），按需展开。'],
   ],
   events: [
     ['.qel', '事件一级列表', '时间/级别/对象/短摘要扫读；默认不铺 raw 与长原因。'],

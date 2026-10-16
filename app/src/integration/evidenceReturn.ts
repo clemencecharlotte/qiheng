@@ -20,6 +20,20 @@ export interface QaViewSnapshot {
   input: string
   answer: NarratedAnswer | null
   runIdentity: string
+  /** Conversation UI only; never replays a query or changes business state. */
+  messages?: ChatMessageSnapshot[]
+  chatId?: string
+  draft?: string
+  scrollTop?: number
+}
+
+export interface ChatMessageSnapshot {
+  id: number
+  role: 'user' | 'assistant'
+  text?: string
+  answer?: NarratedAnswer | null
+  error?: string
+  evidenceOpen?: boolean
 }
 
 /** M29 · 序幕设备体验入口快照（仅内存，随唯一会话 entry）。 */

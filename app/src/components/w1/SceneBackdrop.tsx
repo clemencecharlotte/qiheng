@@ -15,7 +15,7 @@
  *   30fps 采样；reduce 即时单次。
  */
 import { useEffect, useRef } from 'react'
-import { SCENE_ENVS, interpolateEnv, layerWeights, useSceneChase } from './scenePalette'
+import { SCENE_ENVS, interpolateEnv, layerWeights, relativeLuminance, useSceneChase } from './scenePalette'
 import './SceneBackdrop.css'
 
 /** 太阳轨迹（visual 0→5）：x 从偏东到偏西，y 晨启升起→日间顶→晚间没入→夜班升为冷月 */
@@ -77,6 +77,8 @@ export default function SceneBackdrop({ visualPosition }: { visualPosition: numb
       root.style.setProperty('--w1-ink', env.ink)
       root.style.setProperty('--w1-ink-muted', env.inkMuted)
       root.style.setProperty('--w1-accent', env.accent)
+      // Loose text is on the sky, not on the independently selected card theme.
+      root.style.setProperty('--scene-copy-text', relativeLuminance(env.skyMid) > .22 ? '#102d42' : '#f4f7fb')
     }
   })
 

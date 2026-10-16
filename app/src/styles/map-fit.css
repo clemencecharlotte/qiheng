@@ -118,9 +118,9 @@
    对比度（--text #1b3038 / --muted #576c74 over #fff）：
      label 0.72 ≈ 5.8:1，meta 0.90 ≈ 4.6:1 —— 均 ≥ 0.55 下限且 ≥ 4.5:1。            */
 .qh-relations.qrel-mapfit {
-  --map-dim-text-a: 0.72;
-  --map-dim-meta-a: 0.9;
-  --map-dim-edge-a: 0.3;
+  --map-dim-text-a: 1;
+  --map-dim-meta-a: 1;
+  --map-dim-edge-a: 0.55;
 }
 .qh-relations.qrel-mapfit .qrel-canvas .qrel-gnode.dim {
   opacity: 1;
@@ -148,3 +148,9 @@
 .qh-relations.qrel-mapfit .qrel-canvas .qrel-gline.dim {
   opacity: var(--map-dim-edge-a, 0.3);
 }
+
+/* Keep labels at CSS-pixel size: fit changes spacing, never scales the text. */
+.qh-relations.qrel-mapfit .qrel-gnode { background: var(--material-read-fill, var(--surface)); }
+.qh-relations.qrel-mapfit .qrel-gnode-label { font-size: 14px; font-weight: 600; }
+.qh-relations.qrel-mapfit :is(.qrel-gnode-kind, .qrel-gnode-tag) { font-size: 12px; }
+.qh-relations.qrel-mapfit .qrel-gline { stroke: color-mix(in srgb, var(--text) 52%, var(--border)); stroke-width: 2; }
